@@ -1,0 +1,43 @@
+{
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint/eslint-plugin", "react", "react-hooks"],
+    "extends": ["alloy", "alloy/react", "alloy/typescript"],
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
+    "env": {
+        // Your environments (which contains several predefined global variables)
+        //
+        "node": true,
+        // mocha: true,
+        // jest: true,
+        // jquery: true
+        "es6": true,
+        "browser": true
+    },
+    "globals": {
+        // Your global variables (setting to false means it's not allowed to be reassigned)
+        //
+        // myGlobal: false
+    },
+    "rules": {
+        // Customize your rules
+        // http://eslint.cn/docs/rules/
+        "no-void": ["off", { "allowAsStatement": false }],
+        "no-empty-pattern": "off",
+        "@typescript-eslint/no-empty-interface": "off",
+        "@typescript-eslint/no-duplicate-enum-values": "off",
+        "no-constant-binary-expression": "off",
+        "no-unused-private-class-members": "off",
+        "prefer-object-has-own": "off"
+    },
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "ecmaVersion": 2021,
+        "sourceType": "module"
+    }
+}
