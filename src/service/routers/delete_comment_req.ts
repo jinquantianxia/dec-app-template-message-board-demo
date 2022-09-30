@@ -1,13 +1,12 @@
 import * as cyfs from 'cyfs-sdk';
 import { CommentDecoder } from '../../common/objs/comment_object';
-import { MessageDecoder } from '../../common/objs/message_object';
 import { checkStack } from '../../common/cyfs_helper/stack_wraper';
 import { AppObjectType } from '../../common/types';
 import { DeleteCommentResponseParam } from '../../common/routers';
 import { ResponseObject } from '../../common/objs/response_object';
 import { toNONObjectInfo, makeBuckyErr } from '../../common/cyfs_helper/kits';
 import { ResponseObjectDecoder } from '../../common/objs/response_object';
-import { ROUTER_PATHS, PublishCommentResponseParam } from '../../common/routers';
+import { ROUTER_PATHS } from '../../common/routers';
 
 export async function DeleteCommentReqRouter(
     req: cyfs.RouterHandlerPostObjectRequest
@@ -15,6 +14,8 @@ export async function DeleteCommentReqRouter(
     const stack = checkStack().check();
     const owner = stack.local_device().desc().owner()!.unwrap();
     console.log(`current target -----> ${req.request.common.target?.to_base_58()}`);
+
+    // Only allow cross-zone request
     if (!owner.equals(req.request.common.target!)) {
         console.log(`should transfer to -> ${req.request.common.target}`);
         return Promise.resolve(

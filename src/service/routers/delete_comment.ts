@@ -166,9 +166,6 @@ export async function DeleteCommentRouter(
 
     // Cross-zone notification, notify the specified user OOD
     const stackWraper = checkStack();
-    // If here is the windows simulator environment, C:\cyfs\etc\zone-simulator\desc_list -> zone2 -> people,
-    // If here is the mac simulator environment, /Users/<username>/Library/Application Support/cyfs/etc/zone-simulator/desc_list -> zone2 -> people,
-    // otherwise, you should use real poepleId.
     const peopleId = getFriendPeopleId();
     await stackWraper.postObject(commentObject, ResponseObjectDecoder, {
         reqPath: ROUTER_PATHS.DELETE_COMMENT_REQ,

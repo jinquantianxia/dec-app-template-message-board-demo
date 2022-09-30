@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import styles from './App.module.less';
 import { init } from '@www/initialize';
-import Welcome from '@src/www/pages/MessageBoard/MessageBoard';
+import MessageBoard from '@src/www/pages/MessageBoard/MessageBoard';
 
 export default function App() {
     useEffect(() => {
@@ -9,7 +9,7 @@ export default function App() {
     }, []);
     return (
         <div className={styles.app}>
-            <Welcome />
+            <MessageBoard />
         </div>
     );
 }

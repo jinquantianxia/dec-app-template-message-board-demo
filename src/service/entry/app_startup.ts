@@ -28,11 +28,7 @@ class PostRouterReqPathRouterHandler implements cyfs.RouterHandlerPostObjectRout
 
 async function addRouters(stack: cyfs.SharedCyfsStack, routers: RouterArray): Promise<void> {
     for (const routerObj of routers) {
-        const access = new cyfs.AccessString(0);
-        access.set_group_permissions(cyfs.AccessGroup.CurrentZone, cyfs.AccessPermissions.Full);
-        access.set_group_permissions(cyfs.AccessGroup.CurrentDevice, cyfs.AccessPermissions.Full);
-        access.set_group_permissions(cyfs.AccessGroup.OwnerDec, cyfs.AccessPermissions.Full);
-        access.set_group_permissions(cyfs.AccessGroup.OthersZone, cyfs.AccessPermissions.Full);
+        const access = cyfs.AccessString.full();
         const ra = await stack
             .root_state_meta_stub()
             .add_access(cyfs.GlobalStatePathAccessItem.new(routerObj.reqPath, access));

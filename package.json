@@ -62,7 +62,7 @@
 	},
 	"dependencies": {
 		"antd": "^4.18.3",
-		"cyfs-sdk": "^0.5.1",
+		"cyfs-sdk": "^0.5.3",
 		"dayjs": "^1.11.5",
 		"google-protobuf": "^3.20.1",
 		"path": "^0.12.7",

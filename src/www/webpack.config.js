@@ -5,13 +5,9 @@ const fs = require('fs-extra');
 const webpack = require('webpack');
 
 module.exports = (env) => {
-    console.log('Production: ', env.production);
-    const appEnv = process.env.ENV ? process.env.ENV : 'nightly';
-    console.log('ENV', appEnv);
     const jsxPlugins = [['@babel/plugin-proposal-decorators', { legacy: true }]];
     const plugins = [
         new webpack.DefinePlugin({
-            __ENV__: JSON.stringify(appEnv),
             process: { platform: {} }
         }),
         new HtmlWebpackPlugin({

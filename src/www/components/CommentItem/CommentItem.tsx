@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Input, Avatar, message } from 'antd';
-import * as cyfs from 'cyfs-sdk';
-import { CommentOutlined, DeleteOutlined, UserOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Button, Avatar } from 'antd';
+import { DeleteOutlined, UserOutlined } from '@ant-design/icons';
 import styles from './CommentItem.module.less';
 import { CommentItem } from '@www/types/common';
 import dayjs from 'dayjs';

@@ -12,6 +12,8 @@ export async function publishMessageReqRouter(
     const stack = checkStack().check();
     const owner = stack.local_device().desc().owner()!.unwrap();
     console.log(`current target -----> ${req.request.common.target?.to_base_58()}`);
+
+    // Only allow cross-zone request
     if (!owner.equals(req.request.common.target!)) {
         console.log(`should transfer to -> ${req.request.common.target}`);
         return Promise.resolve(

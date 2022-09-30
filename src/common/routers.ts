@@ -1,4 +1,3 @@
-import * as cyfs from 'cyfs-sdk';
 import { Message } from './objs/message_object';
 import { Comment } from './objs/comment_object';
 import { ResponseObject } from './objs/response_object';

@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styles from './MessageBoard.module.less';
-import { Button, Input, Avatar, message, Spin } from 'antd';
-import { MessageOutlined, DeleteOutlined } from '@ant-design/icons';
-import { checkStack } from '@src/common/cyfs_helper/stack_wraper';
+import { Button, Input, Spin } from 'antd';
 const { TextArea } = Input;
 import MessageItem from '@www/components/MessageItem/MessageItem';
 import { publishMessage, listMessagesByPage } from '@www/apis/message';
@@ -53,13 +51,14 @@ export default function Welcome() {
                     </div>
                 </div>
                 <h2 className={styles.title}>Message Board</h2>
-                <Spin tip="loading" spinning={spinning}>
-                    <div className={styles.messageBoardContent}>
+
+                <div className={styles.messageBoardContent}>
+                    <Spin tip="loading" spinning={spinning}>
                         {messageList.map((message) => {
                             return <MessageItem key={message.id} messageObject={message} />;
                         })}
-                    </div>
-                </Spin>
+                    </Spin>
+                </div>
             </div>
         </div>
     );

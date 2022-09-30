@@ -4,7 +4,7 @@ import * as cyfs from 'cyfs-sdk';
 import { checkStack } from '@src/common/cyfs_helper/stack_wraper';
 import { ROUTER_PATHS } from '@src/common/routers';
 import { Message, MessageDecoder } from '@src/common/objs/message_object';
-import { ResponseObject, ResponseObjectDecoder } from '@src/common/objs/response_object';
+import { ResponseObjectDecoder } from '@src/common/objs/response_object';
 import { DEC_ID } from '../../common/constant';
 import { MessageItem } from '@www/types/common';
 
