@@ -8,7 +8,7 @@ A set of standardized dec-app project templates.
 -   Execute yarn proto-mac to compile proto files into js files, you need to execute yarn proto-mac-pre (mac) first
 -   Execute yarn proto-windows to compile proto files into js files (windows)
 -   Execute yarn dev to start the local front-end service, and you can view the modification effect in real time from the `cyfs browser`
--   Run tools/zone-simulator.exe to open the simulator. Note: If you only test the same zone interface, use sim1, if you need to test the cross-zone interface, you need to open sim2 again
+-   Run tools/zone-simulator.exe to open the simulator. Note: If you only test the same zone interface, use sim1, if you need to test the cross-zone interface, you need to open sim2.
 -   execute yarn sim1 to start `sim1` running on the local emulator,
 -   Execute yarn sim2 to start `sim2` running on the local emulator
 -   execute yarn build to execute the build task
