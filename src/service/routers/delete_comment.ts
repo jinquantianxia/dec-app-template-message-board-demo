@@ -30,6 +30,8 @@ export async function DeleteCommentRouter(
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InvalidParam, msg));
     }
     const commentObject = r.unwrap();
+
+    // Check if Comment object type is delete and ref cannot be undefined
     const isDeleteComment = commentObject.type === 1;
     if (!isDeleteComment) {
         const msg = `current commentObject type is not delete, object_id -> ${commentObject
@@ -114,12 +116,14 @@ export async function DeleteCommentRouter(
     const deleteCommentObj = rc.unwrap();
     const deleteCommentOwner = deleteCommentObj.desc().owner()!.unwrap();
     const commentObjectOwner = commentObject.desc().owner()!.unwrap();
+    // Check whether the user who currently initiates the deletion has permission to delete the target comment object
     if (!commentObjectOwner.equals(deleteCommentOwner)) {
-        // 当前发起删除的Comment对象的Owner与要删除的Comment的Owner不匹配
         const msg = `current comment owner -> ${commentObjectOwner.to_base_58()} mismatch the comment to be deleted -> ${deleteCommentOwner.to_base_58()}, delete failed.`;
         console.error(msg);
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InvalidParam, msg));
     }
+
+    // Use the Comment object information to create the corresponding NONObjectInfo object, and add the NONObjectInfo object to the RootState through the put_object operation
     const decId = stack.dec_id!;
     const nonObj = new cyfs.NONObjectInfo(
         commentObject.desc().object_id(),
@@ -159,6 +163,7 @@ export async function DeleteCommentRouter(
     }
     // Transaction operation succeeded
     console.log('publish new comment success.');
+
     // Cross-zone notification, notify the specified user OOD
     const stackWraper = checkStack();
     // If here is the windows simulator environment, C:\cyfs\etc\zone-simulator\desc_list -> zone2 -> people,
@@ -170,6 +175,7 @@ export async function DeleteCommentRouter(
         decId: stack.dec_id!,
         target: cyfs.PeopleId.from_base_58(peopleId).unwrap().object_id // Here is the difference between the same zone and cross zone.
     });
+
     // Create a ResponseObject object as a response parameter and send the result to the front end
     const respObj: DeleteCommentResponseParam = ResponseObject.create({
         err: 0,

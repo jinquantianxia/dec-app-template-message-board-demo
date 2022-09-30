@@ -21,7 +21,7 @@ export async function publishMessageReqRouter(
         );
     }
 
-    // Parse out the request object and determine whether the request object is an Order object
+    // Parse out the request object and determine whether the request object is an Message object
     const { object, object_raw } = req.request.object;
     if (!object || object.obj_type() !== AppObjectType.MESSAGE) {
         const msg = 'obj_type err.';
@@ -30,7 +30,7 @@ export async function publishMessageReqRouter(
             cyfs.Err(new cyfs.BuckyError(cyfs.BuckyErrorCode.InvalidParam, msg))
         );
     }
-    // Use OrderDecoder to decode the Order object
+    // Use OrderDecoder to decode the Message object
     const decoder = new MessageDecoder();
     const dr = decoder.from_raw(object_raw);
     if (dr.err) {
@@ -51,7 +51,7 @@ export async function publishMessageReqRouter(
     }
     pathOpEnv = r.unwrap();
 
-    // Determine the path where the new Order object will be stored and lock the path
+    // Determine the path where the new Message object will be stored and lock the path
     const msgPath = `/messages_list/${msgKey}`;
     const paths = [msgPath];
     console.log(`will lock paths ${JSON.stringify(paths)}`);
@@ -66,7 +66,7 @@ export async function publishMessageReqRouter(
     // Locked successfully
     console.log(`lock ${JSON.stringify(paths)} success.`);
 
-    // Use the Order object information to create the corresponding NONObjectInfo object, and add the NONObjectInfo object to the RootState through the put_object operation
+    // Use the Message object information to create the corresponding NONObjectInfo object, and add the NONObjectInfo object to the RootState through the put_object operation
     const decId = stack.dec_id!;
     const nonObj = new cyfs.NONObjectInfo(
         msgObject.desc().object_id(),
@@ -87,7 +87,7 @@ export async function publishMessageReqRouter(
         return Promise.resolve(cyfs.Err(new cyfs.BuckyError(cyfs.BuckyErrorCode.Failed, errMsg)));
     }
 
-    // Use the object_id of NONObjectInfo for the transaction operation of creating a new Order object
+    // Use the object_id of NONObjectInfo for the transaction operation of creating a new Message object
     const objectId = nonObj.object_id;
     const rp = await pathOpEnv.insert_with_path(msgPath, objectId);
     if (rp.err) {

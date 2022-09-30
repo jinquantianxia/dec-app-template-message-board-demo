@@ -1,18 +1,17 @@
-// demo apis
+// comment apis
 
 import * as cyfs from 'cyfs-sdk';
 import { checkStack } from '@src/common/cyfs_helper/stack_wraper';
 import { ROUTER_PATHS } from '@src/common/routers';
-import { Message, MessageDecoder } from '@src/common/objs/message_object';
 import { Comment, CommentDecoder } from '@src/common/objs/comment_object';
-import { ResponseObject, ResponseObjectDecoder } from '@src/common/objs/response_object';
+import { ResponseObjectDecoder } from '@src/common/objs/response_object';
 import { DEC_ID } from '../../common/constant';
 import { CommentType, CommentItem } from '@www/types/common';
 
 // publish comment
 export async function publishComment(msgId: cyfs.ObjectId, content: string) {
     const stackWraper = checkStack();
-    // Create an Message object
+    // Create an Comment object
     const commentObj = Comment.create({
         msgId,
         type: CommentType.NEW,
@@ -45,7 +44,7 @@ export async function publishComment(msgId: cyfs.ObjectId, content: string) {
 // delete comment
 export async function deleteComment(comment: CommentItem) {
     const stackWraper = checkStack();
-    // Create an Message object
+    // Create a delete Comment object
     const commentObj = Comment.create({
         msgId: cyfs.ObjectId.from_base_58(comment.msgId).unwrap(),
         type: CommentType.DELETE,

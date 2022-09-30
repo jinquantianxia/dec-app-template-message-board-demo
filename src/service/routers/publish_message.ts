@@ -10,7 +10,7 @@ import { getFriendPeopleId } from '../util';
 export async function publishMessageRouter(
     req: cyfs.RouterHandlerPostObjectRequest
 ): Promise<cyfs.BuckyResult<cyfs.RouterHandlerPostObjectResult>> {
-    // Parse out the request object and determine whether the request object is an Order object
+    // Parse out the request object and determine whether the request object is an Message object
     const { object, object_raw } = req.request.object;
     if (!object || object.obj_type() !== AppObjectType.MESSAGE) {
         const msg = 'obj_type err.';
@@ -18,7 +18,7 @@ export async function publishMessageRouter(
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InvalidParam, msg));
     }
 
-    // Use OrderDecoder to decode the Order object
+    // Use OrderDecoder to decode the Message object
     const decoder = new MessageDecoder();
     const dr = decoder.from_raw(object_raw);
     if (dr.err) {
@@ -39,7 +39,7 @@ export async function publishMessageRouter(
     }
     pathOpEnv = r.unwrap();
 
-    // Determine the path where the new Order object will be stored and lock the path
+    // Determine the path where the new Message object will be stored and lock the path
     const msgKey = msgObject.desc().object_id().to_base_58();
     const msgPath = `/messages_list/${msgKey}`;
     const paths = [msgPath];
@@ -53,7 +53,7 @@ export async function publishMessageRouter(
     }
     console.log(`lock ${JSON.stringify(paths)} success.`);
 
-    // Use the Order object information to create the corresponding NONObjectInfo object, and add the NONObjectInfo object to the RootState through the put_object operation
+    // Use the Message object information to create the corresponding NONObjectInfo object, and add the NONObjectInfo object to the RootState through the put_object operation
     const decId = stack.dec_id!;
     const nonObj = new cyfs.NONObjectInfo(
         msgObject.desc().object_id(),
@@ -74,7 +74,7 @@ export async function publishMessageRouter(
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
 
-    // Use the object_id of NONObjectInfo for the transaction operation of creating a new Order object
+    // Use the object_id of NONObjectInfo for the transaction operation of creating a new Message object
     const objectId = nonObj.object_id;
     const rp = await pathOpEnv.insert_with_path(msgPath, objectId);
     if (rp.err) {
@@ -94,14 +94,6 @@ export async function publishMessageRouter(
     // Transaction operation succeeded
     console.log('publish new message success.');
 
-    // Create a ResponseObject object as a response parameter and send the result to the front end
-    const respObj: PublishMessageResponseParam = ResponseObject.create({
-        err: 0,
-        msg: 'ok',
-        decId: stack.dec_id!,
-        owner: checkStack().checkOwner()
-    });
-
     // Cross-zone notification, notify the specified user OOD
     const stackWraper = checkStack();
     // If here is the windows simulator environment, C:\cyfs\etc\zone-simulator\desc_list -> zone2 -> people,
@@ -113,6 +105,15 @@ export async function publishMessageRouter(
         decId: stack.dec_id!,
         target: cyfs.PeopleId.from_base_58(peopleId).unwrap().object_id // Here is the difference between the same zone and cross zone.
     });
+
+    // Create a ResponseObject object as a response parameter and send the result to the front end
+    const respObj: PublishMessageResponseParam = ResponseObject.create({
+        err: 0,
+        msg: 'ok',
+        decId: stack.dec_id!,
+        owner: checkStack().checkOwner()
+    });
+
     return Promise.resolve(
         cyfs.Ok({
             action: cyfs.RouterHandlerAction.Response,

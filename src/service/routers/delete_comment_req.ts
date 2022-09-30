@@ -85,7 +85,7 @@ export async function DeleteCommentReqRouter(
     // Locked retrieve message successfully
     console.log(`lock ${JSON.stringify(paths)} success.`);
 
-    // Use the get_by_path method of pathOpEnv to get the object_id of the Order object from the storage path of the Order object
+    // Use the get_by_path method of pathOpEnv to get the object_id of the Comment object from the storage path of the Comment object
     const idRetrieve = await pathOpEnv.get_by_path(queryDeleteCommentPath);
     if (idRetrieve.err) {
         const errMsg = `get_by_path (${queryDeleteCommentPath}) failed, ${idRetrieve}`;
@@ -99,7 +99,7 @@ export async function DeleteCommentReqRouter(
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
 
-    // Use the get_object method to obtain the cyfs.NONGetObjectOutputResponse object corresponding to the Order object from RootState with the object_id of the Order object as a parameter
+    // Use the get_object method to obtain the cyfs.NONGetObjectOutputResponse object corresponding to the Comment object from RootState with the object_id of the Comment object as a parameter
     const gr = await stack.non_service().get_object({
         common: { level: cyfs.NONAPILevel.NOC, flags: 0 },
         object_id: retrieveObjectId
@@ -110,14 +110,14 @@ export async function DeleteCommentReqRouter(
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
 
-    // decode the Order object in Uint8Array format to get the final Order object
+    // decode the Comment object in Uint8Array format to get the final Comment object
     const commentResult = gr.unwrap().object.object_raw;
     const rc = decoder.from_raw(commentResult);
     if (rc.err) {
         const msg = `decode failed, ${r}.`;
         console.error(msg);
         return Promise.resolve(
-            makeBuckyErr(cyfs.BuckyErrorCode.Failed, 'decode order obj from raw excepted.')
+            makeBuckyErr(cyfs.BuckyErrorCode.Failed, 'decode Comment obj from raw excepted.')
         );
     }
     const deleteCommentObj = rc.unwrap();
@@ -149,7 +149,7 @@ export async function DeleteCommentReqRouter(
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
 
-    // Use the object_id of NONObjectInfo for the transaction operation of creating a new Order object
+    // Use the object_id of NONObjectInfo for the transaction operation of creating a new Comment object
     const objectId = nonObj.object_id;
     const rp = await pathOpEnv.insert_with_path(commentPath, objectId);
     if (rp.err) {

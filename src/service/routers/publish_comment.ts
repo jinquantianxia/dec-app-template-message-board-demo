@@ -10,7 +10,7 @@ import { getFriendPeopleId } from '../util';
 export async function publisCommentRouter(
     req: cyfs.RouterHandlerPostObjectRequest
 ): Promise<cyfs.BuckyResult<cyfs.RouterHandlerPostObjectResult>> {
-    // Parse out the request object and determine whether the request object is an Order object
+    // Parse out the request object and determine whether the request object is an Comment object
     const { object, object_raw } = req.request.object;
     if (!object || object.obj_type() !== AppObjectType.COMMENT) {
         const msg = 'obj_type err.';
@@ -18,7 +18,7 @@ export async function publisCommentRouter(
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InvalidParam, msg));
     }
 
-    // Use OrderDecoder to decode the Order object
+    // Use OrderDecoder to decode the Comment object
     const decoder = new CommentDecoder();
     const dr = decoder.from_raw(object_raw);
     if (dr.err) {
@@ -38,7 +38,7 @@ export async function publisCommentRouter(
     }
     const pathOpEnv = r.unwrap();
 
-    // Determine the path where the new Order object will be stored and lock the path
+    // Determine the path where the new Comment object will be stored and lock the path
     const commentKey = commentObject.desc().object_id().to_base_58();
     const msgObejctId = commentObject.msgId.to_base_58();
     const commentPath = `/comments_list/${msgObejctId}/${commentKey}`;
@@ -53,7 +53,7 @@ export async function publisCommentRouter(
     }
     console.log(`lock ${JSON.stringify(paths)} success.`);
 
-    // Use the Order object information to create the corresponding NONObjectInfo object, and add the NONObjectInfo object to the RootState through the put_object operation
+    // Use the Comment object information to create the corresponding NONObjectInfo object, and add the NONObjectInfo object to the RootState through the put_object operation
     const decId = stack.dec_id!;
     const nonObj = new cyfs.NONObjectInfo(
         commentObject.desc().object_id(),
@@ -74,7 +74,7 @@ export async function publisCommentRouter(
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
 
-    // Use the object_id of NONObjectInfo for the transaction operation of creating a new Order object
+    // Use the object_id of NONObjectInfo for the transaction operation of creating a new Comment object
     const objectId = nonObj.object_id;
     const rp = await pathOpEnv.insert_with_path(commentPath, objectId);
     if (rp.err) {
