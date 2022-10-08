@@ -42,14 +42,13 @@ export async function deleteMessageReqRouter(
     const MessageObj = r.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
-    let pathOpEnv: cyfs.PathOpEnvStub;
     let createRet = await stack.root_state_stub().create_path_op_env();
     if (createRet.err) {
         const msg = `create_path_op_env failed, ${createRet}.`;
         console.error(msg);
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InternalError, msg));
     }
-    pathOpEnv = createRet.unwrap();
+    const pathOpEnv = createRet.unwrap();
 
     // Determine the storage path of the Message object to be deleted and lock the path
     const queryMessagePath = `/messages_list/${MessageObj.key}`;

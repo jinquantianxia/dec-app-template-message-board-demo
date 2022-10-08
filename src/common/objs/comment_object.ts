@@ -26,10 +26,10 @@ const COMMENT_DESC_TYPE_INFO = new CommentDescTypeInfo();
 
 export class CommentDescContent extends cyfs.ProtobufDescContent {
     private m_key: string;
-    private m_msgId: cyfs.ObjectId;
+    private m_msgId: string;
     private m_content: string;
 
-    public constructor(param: { key: string; msgId: cyfs.ObjectId; content: string }) {
+    public constructor(param: { key: string; msgId: string; content: string }) {
         super();
         this.m_key = param.key;
         this.m_msgId = param.msgId;
@@ -43,7 +43,7 @@ export class CommentDescContent extends cyfs.ProtobufDescContent {
     public try_to_proto(): cyfs.BuckyResult<protos.Comment> {
         const target = new protos.Comment();
         target.setKey(this.m_key);
-        target.setMsgid(cyfs.ProtobufCodecHelper.encode_buf(this.m_msgId).unwrap());
+        target.setMsgid(this.m_msgId);
         target.setContent(this.m_content);
 
         return cyfs.Ok(target);
@@ -53,7 +53,7 @@ export class CommentDescContent extends cyfs.ProtobufDescContent {
         return this.m_key;
     }
 
-    public get msgId(): cyfs.ObjectId {
+    public get msgId(): string {
         return this.m_msgId;
     }
 
@@ -76,14 +76,7 @@ export class CommentDescContentDecoder extends cyfs.ProtobufDescContentDecoder<
 
     public try_from_proto(commentObject: protos.Comment): cyfs.BuckyResult<CommentDescContent> {
         const key = commentObject.getKey();
-        const msgId = checkObjectId(commentObject.getMsgid_asU8());
-        if (!msgId) {
-            const msg = `CommentDescContentDecoder decode failed for objectId.len=${
-                commentObject.getMsgid_asU8().length
-            }`;
-            console.error(msg);
-            return makeBuckyErr(cyfs.BuckyErrorCode.CodeError, msg);
-        }
+        const msgId = commentObject.getMsgid();
 
         const content = commentObject.getContent();
 
@@ -149,7 +142,7 @@ export class CommentIdDecoder extends cyfs.NamedObjectIdDecoder<
 export class Comment extends cyfs.NamedObject<CommentDescContent, CommentBodyContent> {
     public static create(param: {
         key: string;
-        msgId: cyfs.ObjectId;
+        msgId: string;
         content: string;
         decId: cyfs.ObjectId;
         owner: cyfs.ObjectId;
@@ -165,7 +158,7 @@ export class Comment extends cyfs.NamedObject<CommentDescContent, CommentBodyCon
         return this.desc().content().key;
     }
 
-    public get msgId(): cyfs.ObjectId {
+    public get msgId(): string {
         return this.desc().content().msgId;
     }
 

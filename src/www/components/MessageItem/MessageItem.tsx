@@ -27,7 +27,7 @@ export default function MessageItem({
     const [deleteLoading, setDeleteLoading] = useState(false);
     useEffect(() => {
         setTimeout(() => {
-            // queryCommentsFromMessage();
+            queryCommentsFromMessage();
         }, 2000);
     }, []);
 
@@ -62,14 +62,10 @@ export default function MessageItem({
             console.log('modify message result: ', r);
             onHandleModifyMessageSuccess();
         } else {
-            const r = await publishComment(
-                cyfs.ObjectId.from_base_58(messageObject.key).unwrap(),
-                inputValue
-            );
+            const r = await publishComment(messageObject.key, inputValue);
             console.log('publish comment result: ', r);
+            await queryCommentsFromMessage();
         }
-
-        // await queryCommentsFromMessage();
         handleCancelCommentInput();
         setSubmitLoading(false);
     };
@@ -77,10 +73,6 @@ export default function MessageItem({
     const handleCancelCommentInput = () => {
         setShowInput(false);
         setInputValue('');
-    };
-
-    const handleDeleteComment = async () => {
-        // await queryCommentsFromMessage();
     };
 
     return (
@@ -147,13 +139,7 @@ export default function MessageItem({
                 {commentList.length > 0 && (
                     <div className={styles.comments}>
                         {commentList.map((comment) => {
-                            return (
-                                <CommentItem
-                                    key={comment.key}
-                                    commentObject={comment}
-                                    onHandleDeleteComment={handleDeleteComment}
-                                />
-                            );
+                            return <CommentItem key={comment.key} commentObject={comment} />;
                         })}
                     </div>
                 )}

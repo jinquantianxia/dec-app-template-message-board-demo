@@ -7,9 +7,8 @@ import dayjs from 'dayjs';
 
 interface Props {
     commentObject: CommentItem;
-    onHandleDeleteComment: (comment: CommentItem) => void;
 }
-export default function CommentItem({ commentObject, onHandleDeleteComment }: Props) {
+export default function CommentItem({ commentObject }: Props) {
     return (
         <div className={styles.msgItem}>
             <div className={styles.iconBox}>

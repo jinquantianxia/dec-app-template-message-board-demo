@@ -53,7 +53,7 @@ export async function publishCommentReqRouter(
 
     // Determine the path where the new Comment object will be stored and lock the path
     const commentKey = commentObject.desc().object_id().to_base_58();
-    const msgObejctId = commentObject.msgId.to_base_58();
+    const msgObejctId = commentObject.msgId;
     const commentPath = `/comments_list/${msgObejctId}/${commentKey}`;
     const paths = [commentPath];
     console.log(`will lock paths ${JSON.stringify(paths)}`);

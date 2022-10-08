@@ -7,7 +7,7 @@ message Message {
 
 message Comment {
 	string key  = 1;
-	bytes msgId = 2;
+	string msgId = 2;
 	string content = 3;
 }
 

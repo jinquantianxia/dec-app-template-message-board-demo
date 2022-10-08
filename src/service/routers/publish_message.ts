@@ -29,7 +29,6 @@ export async function publishMessageRouter(
     const msgObject = dr.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
-    let pathOpEnv: cyfs.PathOpEnvStub;
     const stack = checkStack().check();
     const r = await stack.root_state_stub().create_path_op_env();
     if (r.err) {
@@ -37,11 +36,10 @@ export async function publishMessageRouter(
         console.error(msg);
         return r;
     }
-    pathOpEnv = r.unwrap();
+    const pathOpEnv = r.unwrap();
 
     // Determine the path where the new Message object will be stored and lock the path
-    const msgKey = msgObject.key;
-    const msgPath = `/messages_list/${msgKey}`;
+    const msgPath = `/messages_list/${msgObject.key}`;
     const paths = [msgPath];
     console.log(`will lock paths ${JSON.stringify(paths)}`);
     const lockR = await pathOpEnv.lock(paths, cyfs.JSBI.BigInt(30000));

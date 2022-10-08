@@ -44,14 +44,13 @@ export async function publishMessageReqRouter(
     const msgKey = msgObject.key;
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
-    let pathOpEnv: cyfs.PathOpEnvStub;
     const r = await stack.root_state_stub().create_path_op_env();
     if (r.err) {
         const msg = `create_path_op_env failed, ${r}.`;
         console.error(msg);
         return r;
     }
-    pathOpEnv = r.unwrap();
+    const pathOpEnv = r.unwrap();
 
     // Determine the path where the new Message object will be stored and lock the path
     const msgPath = `/messages_list/${msgKey}`;

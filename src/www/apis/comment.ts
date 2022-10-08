@@ -10,7 +10,7 @@ import { CommentItem } from '@www/types/common';
 import { generateUniqueKey } from '@www/utils/common';
 
 // publish comment
-export async function publishComment(msgId: cyfs.ObjectId, content: string) {
+export async function publishComment(msgId: string, content: string) {
     const stackWraper = checkStack();
     // Create an Comment object
     const commentObj = Comment.create({
@@ -65,7 +65,7 @@ export async function retrieveComment(objectId: cyfs.ObjectId) {
     const commentRawObj = rm.unwrap();
     const commentObj: CommentItem = {
         key: commentRawObj.key,
-        msgId: commentRawObj.msgId.to_base_58(),
+        msgId: commentRawObj.msgId,
         name: commentRawObj.desc().owner()!.unwrap().to_base_58(),
         time: cyfs.bucky_time_2_js_time(commentRawObj.desc().create_time()),
         content: commentRawObj.content,
@@ -94,10 +94,10 @@ export async function listCommentsByPage(messageId: string, pageIndex: number) {
     }
 
     const list = lr.unwrap();
-    const keyList = list.map((item) => item.map!.key);
+    const keyList = list.map((item) => item.map!.value);
     const msgList = await Promise.all(
         keyList.map(async (item) => {
-            const msg = await retrieveComment(cyfs.ObjectId.from_base_58(item).unwrap());
+            const msg = await retrieveComment(item);
             return msg;
         })
     );

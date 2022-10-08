@@ -29,7 +29,6 @@ export async function updateMessageRouter(
     const MessageObject = r.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
-    let pathOpEnv: cyfs.PathOpEnvStub;
     const stack = checkStack().check();
     let createRet = await stack.root_state_stub().create_path_op_env();
     if (createRet.err) {
@@ -37,7 +36,7 @@ export async function updateMessageRouter(
         console.error(msg);
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InternalError, msg));
     }
-    pathOpEnv = createRet.unwrap();
+    const pathOpEnv = createRet.unwrap();
 
     // Determine the storage path of the Message object to be updated and lock the path
     const queryMessagePath = `/messages_list/${MessageObject.key}`;
@@ -61,8 +60,8 @@ export async function updateMessageRouter(
         pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
-    const id = idR.unwrap();
-    if (!id) {
+    const oldObjectId = idR.unwrap();
+    if (!oldObjectId) {
         const errMsg = `unwrap failed after get_by_path (${queryMessagePath}) failed, ${idR}`;
         pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
@@ -89,13 +88,15 @@ export async function updateMessageRouter(
     }
 
     // Using pathOpEnv, the transaction operation of replacing the old Message object with the object_id of the NONObjectInfo object of the new Message object
-    const objectId = nonObj.object_id;
-    const rs = await pathOpEnv.set_with_path(queryMessagePath, objectId!, id, true);
+    const newObjectId = nonObj.object_id;
+    const rs = await pathOpEnv.set_with_path(queryMessagePath, newObjectId!, oldObjectId, true);
     console.log(
-        `set_with_path(${queryMessagePath}, ${objectId!.to_base_58()}, ${id.to_base_58()}, true), ${rs}`
+        `set_with_path(${queryMessagePath}, ${newObjectId!.to_base_58()}, ${oldObjectId.to_base_58()}, true), ${rs}`
     );
     if (rs.err) {
-        console.error(`commit set_with_path(${queryMessagePath},${objectId},${id}), ${rs}.`);
+        console.error(
+            `commit set_with_path(${queryMessagePath},${newObjectId},${oldObjectId}), ${rs}.`
+        );
         pathOpEnv.abort();
         return rs;
     }
