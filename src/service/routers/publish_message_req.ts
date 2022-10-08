@@ -41,7 +41,7 @@ export async function publishMessageReqRouter(
         return dr;
     }
     const msgObject = dr.unwrap();
-    const msgKey = msgObject.desc().object_id().to_base_58();
+    const msgKey = msgObject.key;
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
     let pathOpEnv: cyfs.PathOpEnvStub;

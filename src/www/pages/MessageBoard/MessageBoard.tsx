@@ -30,6 +30,7 @@ export default function Welcome() {
         console.log('publish message result: ', r);
         await queryMessageRecords();
         setPublishLoading(false);
+        setMessage('');
     };
     return (
         <div className={styles.box}>
@@ -55,7 +56,14 @@ export default function Welcome() {
                 <div className={styles.messageBoardContent}>
                     <Spin tip="loading" spinning={spinning}>
                         {messageList.map((message) => {
-                            return <MessageItem key={message.id} messageObject={message} />;
+                            return (
+                                <MessageItem
+                                    key={message.key}
+                                    messageObject={message}
+                                    onHandleModifyMessageSuccess={queryMessageRecords}
+                                    onHandleDeleteMessageSuccess={queryMessageRecords}
+                                />
+                            );
                         })}
                     </Spin>
                 </div>

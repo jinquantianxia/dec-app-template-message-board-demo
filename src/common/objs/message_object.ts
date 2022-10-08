@@ -2,6 +2,7 @@
 import * as cyfs from 'cyfs-sdk';
 import { AppObjectType } from '../types';
 import * as protos from './obj_proto_pb';
+import { checkObjectId, makeBuckyErr } from '../cyfs_helper/kits';
 // The first 16 bits of type are reserved by the system, and the type of the applied object should be greater than 32767
 export const MESSAGE_OBJECT_TYPE = AppObjectType.MESSAGE;
 
@@ -24,12 +25,13 @@ export class MessageDescTypeInfo extends cyfs.DescTypeInfo {
 const MESSAGE_DESC_TYPE_INFO = new MessageDescTypeInfo();
 
 export class MessageDescContent extends cyfs.ProtobufDescContent {
+    private m_key: string;
     private m_content: string;
 
-    public constructor(content: string) {
+    public constructor(param: { key: string; content: string }) {
         super();
-
-        this.m_content = content;
+        this.m_key = param.key;
+        this.m_content = param.content;
     }
 
     public type_info(): cyfs.DescTypeInfo {
@@ -38,9 +40,13 @@ export class MessageDescContent extends cyfs.ProtobufDescContent {
 
     public try_to_proto(): cyfs.BuckyResult<protos.Message> {
         const target = new protos.Message();
+        target.setKey(this.m_key);
         target.setContent(this.m_content);
-
         return cyfs.Ok(target);
+    }
+
+    public get key(): string {
+        return this.m_key;
     }
 
     public get content(): string {
@@ -61,8 +67,10 @@ export class MessageDescContentDecoder extends cyfs.ProtobufDescContentDecoder<
     }
 
     public try_from_proto(messageObject: protos.Message): cyfs.BuckyResult<MessageDescContent> {
+        const key = messageObject.getKey();
         const content = messageObject.getContent();
-        return cyfs.Ok(new MessageDescContent(content));
+
+        return cyfs.Ok(new MessageDescContent({ key, content }));
     }
 }
 
@@ -123,14 +131,20 @@ export class MessageIdDecoder extends cyfs.NamedObjectIdDecoder<
 
 export class Message extends cyfs.NamedObject<MessageDescContent, MessageBodyContent> {
     public static create(param: {
+        key: string;
         content: string;
         decId: cyfs.ObjectId;
         owner: cyfs.ObjectId;
     }): Message {
-        const descContent = new MessageDescContent(param.content);
+        const { key, content } = param;
+        const descContent = new MessageDescContent({ key, content });
         const bodyContent = new MessageBodyContent();
         const builder = new MessageBuilder(descContent, bodyContent);
         return builder.dec_id(param.decId).owner(param.owner).build(Message);
+    }
+
+    public get key(): string {
+        return this.desc().content().key;
     }
 
     public get content(): string {

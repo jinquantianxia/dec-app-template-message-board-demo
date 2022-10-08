@@ -1,53 +1,88 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Input, Avatar } from 'antd';
 import * as cyfs from 'cyfs-sdk';
-import { MessageOutlined, UserOutlined } from '@ant-design/icons';
+import { MessageOutlined, UserOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import styles from './MessageItem.module.less';
 import { MessageItem, CommentItem as CommentItemObject } from '@www/types/common';
 import dayjs from 'dayjs';
 import { publishComment, listCommentsByPage } from '@www/apis/comment';
 import CommentItem from '@www/components/CommentItem/CommentItem';
+import { deleteMessage, updateMessage } from '@www/apis/message';
 
 interface Props {
     messageObject: MessageItem;
+    onHandleModifyMessageSuccess: () => void;
+    onHandleDeleteMessageSuccess: () => void;
 }
-export default function MessageItem({ messageObject }: Props) {
-    const [comment, setComment] = useState('');
+export default function MessageItem({
+    messageObject,
+    onHandleModifyMessageSuccess,
+    onHandleDeleteMessageSuccess
+}: Props) {
+    const [inputValue, setInputValue] = useState('');
+    const [isModifyMessage, setIsModifyMessage] = useState(true);
     const [commentList, setCommentList] = useState<CommentItemObject[]>([]);
-    const [showCommentInput, setShowCommentInput] = useState(false);
+    const [showInput, setShowInput] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
+    const [deleteLoading, setDeleteLoading] = useState(false);
     useEffect(() => {
         setTimeout(() => {
-            queryCommentsFromMessage();
+            // queryCommentsFromMessage();
         }, 2000);
     }, []);
 
+    const handleReplyClick = () => {
+        setShowInput(true);
+        setIsModifyMessage(false);
+    };
+
+    const handleModifyMessageClick = () => {
+        setIsModifyMessage(true);
+        setShowInput(true);
+    };
+
+    const handleDeleteMessageClick = async () => {
+        setDeleteLoading(true);
+        const r = await deleteMessage(messageObject.key);
+        console.log('delete message result: ', r);
+        onHandleDeleteMessageSuccess();
+        setDeleteLoading(false);
+    };
+
     const queryCommentsFromMessage = async () => {
-        const list = await listCommentsByPage(messageObject.id, 0);
+        const list = await listCommentsByPage(messageObject.key, 0);
         setCommentList(list);
         console.log('comment list: ', list);
     };
 
-    const handlePublishComment = async () => {
+    const handleSubmitClick = async () => {
         setSubmitLoading(true);
-        const r = await publishComment(
-            cyfs.ObjectId.from_base_58(messageObject.id).unwrap(),
-            comment
-        );
-        console.log('publish comment result: ', r);
-        await queryCommentsFromMessage();
+        if (isModifyMessage) {
+            const r = await updateMessage(messageObject.key, inputValue);
+            console.log('modify message result: ', r);
+            onHandleModifyMessageSuccess();
+        } else {
+            const r = await publishComment(
+                cyfs.ObjectId.from_base_58(messageObject.key).unwrap(),
+                inputValue
+            );
+            console.log('publish comment result: ', r);
+        }
+
+        // await queryCommentsFromMessage();
         handleCancelCommentInput();
         setSubmitLoading(false);
     };
 
     const handleCancelCommentInput = () => {
-        setShowCommentInput(false);
-        setComment('');
+        setShowInput(false);
+        setInputValue('');
     };
 
     const handleDeleteComment = async () => {
-        await queryCommentsFromMessage();
+        // await queryCommentsFromMessage();
     };
+
     return (
         <div className={styles.msgItem}>
             <div className={styles.iconBox}>
@@ -62,20 +97,19 @@ export default function MessageItem({ messageObject }: Props) {
                 </div>
                 <div className={styles.message}>{messageObject.content}</div>
                 <div className={styles.operationBox}>
-                    {!showCommentInput ? (
-                        <Button
-                            icon={<MessageOutlined />}
-                            type="primary"
-                            onClick={() => setShowCommentInput(!showCommentInput)}
-                        >
+                    {!showInput ? (
+                        <Button icon={<MessageOutlined />} onClick={handleReplyClick}>
                             Reply
                         </Button>
                     ) : (
                         <div className={styles.commentInputBox}>
-                            <Input value={comment} onChange={(e) => setComment(e.target.value)} />
+                            <Input
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                            />
                             <Button
                                 type="primary"
-                                onClick={handlePublishComment}
+                                onClick={handleSubmitClick}
                                 loading={submitLoading}
                             >
                                 Submit
@@ -89,13 +123,33 @@ export default function MessageItem({ messageObject }: Props) {
                             </Button>
                         </div>
                     )}
+                    {messageObject.isSelf && (
+                        <div className={styles.selfControlBox}>
+                            <Button
+                                icon={<EditOutlined />}
+                                onClick={handleModifyMessageClick}
+                                style={{ marginLeft: '10px', marginRight: '10px' }}
+                            >
+                                Modify
+                            </Button>
+                            <Button
+                                icon={<DeleteOutlined />}
+                                type="primary"
+                                danger
+                                onClick={handleDeleteMessageClick}
+                                loading={deleteLoading}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    )}
                 </div>
                 {commentList.length > 0 && (
                     <div className={styles.comments}>
                         {commentList.map((comment) => {
                             return (
                                 <CommentItem
-                                    key={comment.id}
+                                    key={comment.key}
                                     commentObject={comment}
                                     onHandleDeleteComment={handleDeleteComment}
                                 />

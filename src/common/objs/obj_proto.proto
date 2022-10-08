@@ -1,19 +1,14 @@
 syntax = "proto3";
 
 message Message {
-	string content = 1;
-}
-
-enum CommentType {
-	NEW = 0;
-	DELETE = 1;
+	string key  = 1;
+	string content = 2;
 }
 
 message Comment {
-	bytes msgId = 1;
-	CommentType type = 2;
+	string key  = 1;
+	bytes msgId = 2;
 	string content = 3;
-	optional bytes ref = 4;
 }
 
 message NoneObject {

@@ -15,6 +15,6 @@ export const APP_NAME = 'message-board-demo';
  * Particularly, when you publish dec app to ood, you should use real poepleIds
  */
 export const peopleIds = [
-    '5r4MYfFerMy9R84TQjM6BZZjr19WkMgKkeCVJwtCpK2e',
-    '5r4MYfFAXpC9restAd7fxMDhdEhxC9J81WCH8epCUeBZ'
+    '5r4MYfFaFn1a2cFjauUmRSaYhmGq1Qex2W216qg7Fkt1',
+    '5r4MYfFFxwMSFgbTHT7wNSgq81FN8tkgpfptvsXTtGM6'
 ];

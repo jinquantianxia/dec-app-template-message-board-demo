@@ -25,22 +25,15 @@ export class CommentDescTypeInfo extends cyfs.DescTypeInfo {
 const COMMENT_DESC_TYPE_INFO = new CommentDescTypeInfo();
 
 export class CommentDescContent extends cyfs.ProtobufDescContent {
+    private m_key: string;
     private m_msgId: cyfs.ObjectId;
-    private m_type: protos.CommentTypeMap[keyof protos.CommentTypeMap];
     private m_content: string;
-    private m_ref?: cyfs.ObjectId;
 
-    public constructor(param: {
-        msgId: cyfs.ObjectId;
-        type: protos.CommentTypeMap[keyof protos.CommentTypeMap];
-        content: string;
-        ref?: cyfs.ObjectId;
-    }) {
+    public constructor(param: { key: string; msgId: cyfs.ObjectId; content: string }) {
         super();
+        this.m_key = param.key;
         this.m_msgId = param.msgId;
-        this.m_type = param.type;
         this.m_content = param.content;
-        this.m_ref = param.ref;
     }
 
     public type_info(): cyfs.DescTypeInfo {
@@ -49,27 +42,23 @@ export class CommentDescContent extends cyfs.ProtobufDescContent {
 
     public try_to_proto(): cyfs.BuckyResult<protos.Comment> {
         const target = new protos.Comment();
+        target.setKey(this.m_key);
         target.setMsgid(cyfs.ProtobufCodecHelper.encode_buf(this.m_msgId).unwrap());
-        target.setType(this.m_type);
         target.setContent(this.m_content);
-        if (this.m_ref) target.setRef(cyfs.ProtobufCodecHelper.encode_buf(this.m_ref).unwrap());
+
         return cyfs.Ok(target);
+    }
+
+    public get key(): string {
+        return this.m_key;
     }
 
     public get msgId(): cyfs.ObjectId {
         return this.m_msgId;
     }
 
-    public get type(): protos.CommentTypeMap[keyof protos.CommentTypeMap] {
-        return this.m_type;
-    }
-
     public get content(): string {
         return this.m_content;
-    }
-
-    public get ref(): cyfs.ObjectId | undefined {
-        return this.m_ref;
     }
 }
 
@@ -86,6 +75,7 @@ export class CommentDescContentDecoder extends cyfs.ProtobufDescContentDecoder<
     }
 
     public try_from_proto(commentObject: protos.Comment): cyfs.BuckyResult<CommentDescContent> {
+        const key = commentObject.getKey();
         const msgId = checkObjectId(commentObject.getMsgid_asU8());
         if (!msgId) {
             const msg = `CommentDescContentDecoder decode failed for objectId.len=${
@@ -94,10 +84,10 @@ export class CommentDescContentDecoder extends cyfs.ProtobufDescContentDecoder<
             console.error(msg);
             return makeBuckyErr(cyfs.BuckyErrorCode.CodeError, msg);
         }
-        const type = commentObject.getType();
+
         const content = commentObject.getContent();
-        const ref = commentObject.hasRef() ? checkObjectId(commentObject.getRef_asU8()) : undefined;
-        return cyfs.Ok(new CommentDescContent({ msgId, type, content, ref }));
+
+        return cyfs.Ok(new CommentDescContent({ key, msgId, content }));
     }
 }
 
@@ -158,33 +148,29 @@ export class CommentIdDecoder extends cyfs.NamedObjectIdDecoder<
 
 export class Comment extends cyfs.NamedObject<CommentDescContent, CommentBodyContent> {
     public static create(param: {
+        key: string;
         msgId: cyfs.ObjectId;
-        type: protos.CommentTypeMap[keyof protos.CommentTypeMap];
         content: string;
-        ref?: cyfs.ObjectId;
         decId: cyfs.ObjectId;
         owner: cyfs.ObjectId;
     }): Comment {
-        const { msgId, type, content, ref } = param;
-        const descContent = new CommentDescContent({ msgId, type, content, ref });
+        const { key, msgId, content } = param;
+        const descContent = new CommentDescContent({ key, msgId, content });
         const bodyContent = new CommentBodyContent();
         const builder = new CommentBuilder(descContent, bodyContent);
         return builder.dec_id(param.decId).owner(param.owner).build(Comment);
     }
+
+    public get key(): string {
+        return this.desc().content().key;
+    }
+
     public get msgId(): cyfs.ObjectId {
         return this.desc().content().msgId;
     }
 
-    public get type(): protos.CommentTypeMap[keyof protos.CommentTypeMap] {
-        return this.desc().content().type;
-    }
-
     public get content(): string {
         return this.desc().content().content;
-    }
-
-    public get ref(): cyfs.ObjectId | undefined {
-        return this.desc().content().ref;
     }
 }
 

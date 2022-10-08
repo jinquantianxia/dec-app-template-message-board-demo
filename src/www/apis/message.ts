@@ -6,13 +6,15 @@ import { ROUTER_PATHS } from '@src/common/routers';
 import { Message, MessageDecoder } from '@src/common/objs/message_object';
 import { ResponseObjectDecoder } from '@src/common/objs/response_object';
 import { DEC_ID } from '../../common/constant';
-import { MessageItem } from '@www/types/common';
+import { MessageItem, MessageType } from '@www/types/common';
+import { generateUniqueKey } from '@www/utils/common';
 
 // publish message
 export async function publishMessage(content: string) {
     const stackWraper = checkStack();
     // Create a new Message object
     const messageObj = Message.create({
+        key: generateUniqueKey(),
         content,
         decId: DEC_ID,
         owner: stackWraper.checkOwner()
@@ -28,6 +30,72 @@ export async function publishMessage(content: string) {
     }
     // Parse out the ResponseObject object
     const r = ret.unwrap();
+    if (r) {
+        const retObj = {
+            err: r.err,
+            msg: r.msg
+        };
+        console.log(`reponse, ${retObj}`);
+        return JSON.stringify(retObj);
+    }
+    return null;
+}
+
+// delete Message
+export async function deleteMessage(msgKey: string) {
+    const stackWraper = checkStack();
+    // Create a delete Message object
+    const MessageObj = Message.create({
+        key: msgKey,
+        content: '',
+        decId: DEC_ID,
+        owner: stackWraper.checkOwner()
+    });
+    // make a request
+    const ret = await stackWraper.postObject(MessageObj, ResponseObjectDecoder, {
+        reqPath: ROUTER_PATHS.DELETE_MESSAGE,
+        decId: DEC_ID
+    });
+    if (ret.err) {
+        console.error(`reponse err, ${ret}`);
+        return null;
+    }
+    // Parse out the ResponseObject object
+    const r = ret.unwrap();
+    if (r) {
+        const retObj = {
+            err: r.err,
+            msg: r.msg
+        };
+        console.log(`reponse, ${retObj}`);
+        return JSON.stringify(retObj);
+    }
+    return null;
+}
+
+// update Message
+export async function updateMessage(msgKey: string, content: string) {
+    const stackWraper = checkStack();
+    // Create a delete Message object
+    const MessageObj = Message.create({
+        key: msgKey,
+        content,
+        decId: DEC_ID,
+        owner: stackWraper.checkOwner()
+    });
+    // make a request
+    const ret = await stackWraper.postObject(MessageObj, ResponseObjectDecoder, {
+        reqPath: ROUTER_PATHS.UPDATE_MESSAGE,
+        decId: DEC_ID
+    });
+
+    if (ret.err) {
+        console.error(`reponse err, ${ret}`);
+        return null;
+    }
+    // Parse out the ResponseObject object
+    const r = ret.unwrap();
+
     if (r) {
         const retObj = {
             err: r.err,
@@ -61,7 +129,7 @@ export async function retrieveMessage(objectId: cyfs.ObjectId) {
     }
     const msgRawObj = rm.unwrap();
     const msgObj: MessageItem = {
-        id: msgRawObj.desc().object_id().to_base_58(),
+        key: msgRawObj.key,
         name: msgRawObj.desc().owner()!.unwrap().to_base_58(),
         time: cyfs.bucky_time_2_js_time(msgRawObj.desc().create_time()),
         content: msgRawObj.content,
@@ -90,11 +158,11 @@ export async function listMessagesByPage(pageIndex: number) {
     }
 
     const list = lr.unwrap();
-    const keyList = list.map((item) => item.map!.key);
+    const keyList = list.map((item) => item.map!.value);
     console.log('keyList: ', keyList);
     const msgList = await Promise.all(
         keyList.map(async (item) => {
-            const msg = await retrieveMessage(cyfs.ObjectId.from_base_58(item).unwrap());
+            const msg = await retrieveMessage(item);
             return msg;
         })
     );
