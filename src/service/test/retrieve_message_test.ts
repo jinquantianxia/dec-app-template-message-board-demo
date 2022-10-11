@@ -5,11 +5,8 @@ import {
     useSimulator,
     waitStackRuntime
 } from '../../common/cyfs_helper/stack_wraper';
-import * as cyfs from 'cyfs-sdk';
 import { DEC_ID } from '../../common/constant';
 import { Message, MessageDecoder } from '../../common/objs/message_object';
-import { generateUniqueKey } from '../../www/utils/common';
-import { ResponseObjectDecoder } from '../../common/objs/response_object';
 import { ROUTER_PATHS } from '../../common/routers';
 
 async function init() {
@@ -20,14 +17,14 @@ async function init() {
 async function retrieveMessage(msgKey: string) {
     const stackWraper = checkStack();
     // Create a delete Message object
-    const MessageObj = Message.create({
+    const messageObj = Message.create({
         key: msgKey,
         content: '',
         decId: DEC_ID,
         owner: stackWraper.checkOwner()
     });
     // make a request
-    const ret = await stackWraper.postObject(MessageObj, MessageDecoder, {
+    const ret = await stackWraper.postObject(messageObj, MessageDecoder, {
         reqPath: ROUTER_PATHS.RETRIEVE_MESSAGE,
         decId: DEC_ID
     });

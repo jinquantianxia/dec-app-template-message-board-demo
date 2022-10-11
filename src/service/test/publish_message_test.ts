@@ -6,7 +6,7 @@ import {
     waitStackRuntime
 } from '../../common/cyfs_helper/stack_wraper';
 import { DEC_ID } from '../../common/constant';
-import { Message, MessageDecoder } from '../../common/objs/message_object';
+import { Message } from '../../common/objs/message_object';
 import { generateUniqueKey } from '../../www/utils/common';
 import { ResponseObjectDecoder } from '../../common/objs/response_object';
 import { ROUTER_PATHS } from '../../common/routers';

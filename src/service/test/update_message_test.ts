@@ -6,8 +6,7 @@ import {
     waitStackRuntime
 } from '../../common/cyfs_helper/stack_wraper';
 import { DEC_ID } from '../../common/constant';
-import { Message, MessageDecoder } from '../../common/objs/message_object';
-import { generateUniqueKey } from '../../www/utils/common';
+import { Message } from '../../common/objs/message_object';
 import { ResponseObjectDecoder } from '../../common/objs/response_object';
 import { ROUTER_PATHS } from '../../common/routers';
 
@@ -19,14 +18,14 @@ async function init() {
 async function updateMessage(msgKey: string, content: string) {
     const stackWraper = checkStack();
     // Create a delete Message object
-    const MessageObj = Message.create({
+    const messageObj = Message.create({
         key: msgKey,
         content,
         decId: DEC_ID,
         owner: stackWraper.checkOwner()
     });
     // make a request
-    const ret = await stackWraper.postObject(MessageObj, ResponseObjectDecoder, {
+    const ret = await stackWraper.postObject(messageObj, ResponseObjectDecoder, {
         reqPath: ROUTER_PATHS.UPDATE_MESSAGE,
         decId: DEC_ID
     });
