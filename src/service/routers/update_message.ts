@@ -46,7 +46,7 @@ export async function updateMessageRouter(
     if (lockR.err) {
         const errMsg = `lock failed, ${lockR}`;
         console.error(errMsg);
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
 
@@ -57,13 +57,13 @@ export async function updateMessageRouter(
     const idR = await pathOpEnv.get_by_path(queryMessagePath);
     if (idR.err) {
         const errMsg = `get_by_path (${queryMessagePath}) failed, ${idR}`;
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
     const oldObjectId = idR.unwrap();
     if (!oldObjectId) {
         const errMsg = `unwrap failed after get_by_path (${queryMessagePath}) failed, ${idR}`;
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
 
@@ -83,7 +83,7 @@ export async function updateMessageRouter(
     });
     if (putR.err) {
         console.error(`commit put-object failed, ${putR}.`);
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return putR;
     }
 
@@ -97,7 +97,7 @@ export async function updateMessageRouter(
         console.error(
             `commit set_with_path(${queryMessagePath},${newObjectId},${oldObjectId}), ${rs}.`
         );
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return rs;
     }
     // transaction commit
@@ -110,6 +110,7 @@ export async function updateMessageRouter(
     // Transaction operation succeeded
     console.log('publish new message success.');
 
+    // Cross-zone notification, notify the specified user OOD
     const stackWraper = checkStack();
     const peopleId = getFriendPeopleId();
     await stackWraper.postObject(MessageObject, ResponseObjectDecoder, {

@@ -26,17 +26,17 @@ export async function deleteMessageReqRouter(
     }
     const { object, object_raw } = req.request.object;
     if (!object || object.obj_type() !== AppObjectType.MESSAGE) {
-        const msg = `obj_type err.`;
-        console.error(msg);
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InvalidParam, msg));
+        const errMsg = 'obj_type err.';
+        console.error(errMsg);
+        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InvalidParam, errMsg));
     }
 
     // Use MessageDecoder to decode the Message object
     const decoder = new MessageDecoder();
     const r = decoder.from_raw(object_raw);
     if (r.err) {
-        const msg = `decode failed, ${r}.`;
-        console.error(msg);
+        const errMsg = `decode failed, ${r}.`;
+        console.error(errMsg);
         return r;
     }
     const MessageObj = r.unwrap();
@@ -44,9 +44,9 @@ export async function deleteMessageReqRouter(
     // Create pathOpEnv to perform transaction operations on objects on RootState
     let createRet = await stack.root_state_stub().create_path_op_env();
     if (createRet.err) {
-        const msg = `create_path_op_env failed, ${createRet}.`;
-        console.error(msg);
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InternalError, msg));
+        const errMsg = `create_path_op_env failed, ${createRet}.`;
+        console.error(errMsg);
+        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InternalError, errMsg));
     }
     const pathOpEnv = createRet.unwrap();
 
@@ -58,7 +58,7 @@ export async function deleteMessageReqRouter(
     if (lockR.err) {
         const errMsg = `lock failed, ${lockR}`;
         console.error(errMsg);
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
 
@@ -69,13 +69,13 @@ export async function deleteMessageReqRouter(
     const idR = await pathOpEnv.get_by_path(queryMessagePath);
     if (idR.err) {
         const errMsg = `get_by_path (${queryMessagePath}) failed, ${idR}`;
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
     const objectId = idR.unwrap();
     if (!objectId) {
         const errMsg = `unwrap failed after get_by_path (${queryMessagePath}) failed, ${idR}`;
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
 
@@ -84,7 +84,7 @@ export async function deleteMessageReqRouter(
     console.log(`remove_with_path(${queryMessagePath}, ${objectId.to_base_58()}), ${rm}`);
     if (rm.err) {
         console.error(`commit remove_with_path(${queryMessagePath}, ${objectId}), ${rm}.`);
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return rm;
     }
 

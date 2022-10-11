@@ -43,7 +43,7 @@ export async function retrieveMessageRouter(
     if (lockR.err) {
         const errMsg = `lock failed, ${lockR}`;
         console.error(errMsg);
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
@@ -54,13 +54,15 @@ export async function retrieveMessageRouter(
     const idR = await pathOpEnv.get_by_path(queryMessagePath);
     if (idR.err) {
         const errMsg = `get_by_path (${queryMessagePath}) failed, ${idR}`;
-        pathOpEnv.abort();
+        console.error(errMsg);
+        await pathOpEnv.abort();
         return makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg);
     }
     const objectId = idR.unwrap();
     if (!objectId) {
         const errMsg = `objectId not found after get_by_path (${queryMessagePath}), ${idR}`;
-        pathOpEnv.abort();
+        console.error(errMsg);
+        await pathOpEnv.abort();
         return makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
@@ -71,12 +73,13 @@ export async function retrieveMessageRouter(
     });
     if (gr.err) {
         const errMsg = `get_object from non_service failed, path(${queryMessagePath}), ${idR}`;
-        pathOpEnv.abort();
+        console.error(errMsg);
+        await pathOpEnv.abort();
         return makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // After releasing the lock, decode the Message object in Uint8Array format to get the final Message object
-    pathOpEnv.abort();
+    await pathOpEnv.abort();
     const MessageResult = gr.unwrap().object.object_raw;
     const decoder = new MessageDecoder();
     const r = decoder.from_raw(MessageResult);

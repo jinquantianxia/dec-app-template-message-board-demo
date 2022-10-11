@@ -14,7 +14,7 @@ export const APP_NAME = 'message-board-demo';
  * If here is the windows simulator environment, C:\cyfs\etc\zone-simulator\desc_list
  * Particularly, when you publish dec app to ood, you should use real poepleIds
  */
-export const peopleIds = [
+export const PEOPLE_IDS = [
     '5r4MYfFaFn1a2cFjauUmRSaYhmGq1Qex2W216qg7Fkt1',
     '5r4MYfFFxwMSFgbTHT7wNSgq81FN8tkgpfptvsXTtGM6'
 ];

@@ -48,7 +48,7 @@ export async function deleteMessageRouter(
     if (lockR.err) {
         const errMsg = `lock failed, ${lockR}`;
         console.error(errMsg);
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
 
@@ -59,13 +59,13 @@ export async function deleteMessageRouter(
     const idR = await pathOpEnv.get_by_path(queryMessagePath);
     if (idR.err) {
         const errMsg = `get_by_path (${queryMessagePath}) failed, ${idR}`;
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
     const objectId = idR.unwrap();
     if (!objectId) {
         const errMsg = `unwrap failed after get_by_path (${queryMessagePath}) failed, ${idR}`;
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
 
@@ -73,9 +73,10 @@ export async function deleteMessageRouter(
     const rm = await pathOpEnv.remove_with_path(queryMessagePath, objectId);
     console.log(`remove_with_path(${queryMessagePath}, ${objectId.to_base_58()}), ${rm}`);
     if (rm.err) {
-        console.error(`commit remove_with_path(${queryMessagePath}, ${objectId}), ${rm}.`);
-        pathOpEnv.abort();
-        return rm;
+        const errMsg = `commit remove_with_path(${queryMessagePath}, ${objectId}), ${rm}.`;
+        console.error(errMsg);
+        await pathOpEnv.abort();
+        return makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // transaction commit
@@ -87,6 +88,8 @@ export async function deleteMessageRouter(
 
     // Transaction operation succeeded
     console.log('delete Message success.');
+
+    // Cross-zone notification, notify the specified user OOD
     const stackWraper = checkStack();
     const peopleId = getFriendPeopleId();
     await stackWraper.postObject(MessageObj, ResponseObjectDecoder, {

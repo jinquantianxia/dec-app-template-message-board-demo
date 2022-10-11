@@ -1,6 +1,7 @@
 import { RouterArray } from '../types';
 import { publishMessageRouter } from './publish_message';
 import { publishMessageReqRouter } from './publish_message_req';
+import { retrieveMessageRouter } from './retrieve_message';
 import { updateMessageRouter } from './update_message';
 import { updateMessageReqRouter } from './update_message_req';
 import { deleteMessageRouter } from './delete_message';
@@ -17,6 +18,10 @@ export const routers: RouterArray = [
     {
         reqPath: ROUTER_PATHS.PUBLISH_MESSAGE_REQ,
         router: publishMessageReqRouter
+    },
+    {
+        reqPath: ROUTER_PATHS.RETRIEVE_MESSAGE,
+        router: retrieveMessageRouter
     },
     {
         reqPath: ROUTER_PATHS.UPDATE_MESSAGE,

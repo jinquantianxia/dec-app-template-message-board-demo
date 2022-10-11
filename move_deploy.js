@@ -35,7 +35,8 @@ function main() {
     copyDirectory('.cyfs', 'deploy/.cyfs');
     copyFileWithLog('src/common/objs/obj_proto_pb.js', 'deploy/src/common/objs/obj_proto_pb.js');
     fsExtra.removeSync('deploy/src/www');
-    copyDirectory('dist', 'deploy/src/www/dist');
+    if (fsExtra.existsSync('dist')) copyDirectory('dist', 'deploy/src/www/dist');
+    fsExtra.removeSync('deploy/src/service/test');
 }
 
 main();

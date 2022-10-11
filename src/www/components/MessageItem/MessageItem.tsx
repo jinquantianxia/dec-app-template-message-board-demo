@@ -89,11 +89,7 @@ export default function MessageItem({
                 </div>
                 <div className={styles.message}>{messageObject.content}</div>
                 <div className={styles.operationBox}>
-                    {!showInput ? (
-                        <Button icon={<MessageOutlined />} onClick={handleReplyClick}>
-                            Reply
-                        </Button>
-                    ) : (
+                    {showInput && (
                         <div className={styles.commentInputBox}>
                             <Input
                                 value={inputValue}
@@ -115,6 +111,9 @@ export default function MessageItem({
                             </Button>
                         </div>
                     )}
+                    {/* <Button icon={<MessageOutlined />} onClick={handleReplyClick}>
+                        Reply
+                    </Button> */}
                     {messageObject.isSelf && (
                         <div className={styles.selfControlBox}>
                             <Button

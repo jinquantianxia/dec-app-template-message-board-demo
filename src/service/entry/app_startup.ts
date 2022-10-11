@@ -28,7 +28,15 @@ class PostRouterReqPathRouterHandler implements cyfs.RouterHandlerPostObjectRout
 
 async function addRouters(stack: cyfs.SharedCyfsStack, routers: RouterArray): Promise<void> {
     for (const routerObj of routers) {
-        const access = cyfs.AccessString.full();
+        // Set access permissions for req_path
+        const access = new cyfs.AccessString(0);
+        access.set_group_permissions(cyfs.AccessGroup.OwnerDec, cyfs.AccessPermissions.Full);
+        // if (routerObj.reqPath.endsWith('_req')) {
+        //     access.set_group_permissions(
+        //         cyfs.AccessGroup.FriendZone,
+        //         cyfs.AccessPermissions.CallOnly
+        //     );
+        // }
         const ra = await stack
             .root_state_meta_stub()
             .add_access(cyfs.GlobalStatePathAccessItem.new(routerObj.reqPath, access));
@@ -37,16 +45,20 @@ async function addRouters(stack: cyfs.SharedCyfsStack, routers: RouterArray): Pr
             continue;
         }
         console.log('add access successed: ', ra.unwrap());
+
+        // Mount the routing module to the specified req_path
         const handleId = `post-${routerObj.reqPath}`;
-        const r = await stack.router_handlers().add_post_object_handler(
-            cyfs.RouterHandlerChain.Handler,
-            handleId,
-            1,
-            undefined, // filter config,Only allow requests from the current App to pass through
-            routerObj.reqPath,
-            cyfs.RouterHandlerAction.Pass,
-            new PostRouterReqPathRouterHandler(routerObj)
-        );
+        const r = await stack
+            .router_handlers()
+            .add_post_object_handler(
+                cyfs.RouterHandlerChain.Handler,
+                handleId,
+                1,
+                undefined,
+                routerObj.reqPath,
+                cyfs.RouterHandlerAction.Pass,
+                new PostRouterReqPathRouterHandler(routerObj)
+            );
 
         if (r.err) {
             console.error(`add post handler (${handleId}) failed, err: ${r}`);
@@ -62,12 +74,14 @@ async function main() {
         name: APP_NAME,
         dir: cyfs.get_app_log_dir(APP_NAME)
     });
+
     // waiting to go online
     const waitR = await waitStackOOD(DEC_ID);
     if (waitR.err) {
         console.error(`service start failed when wait stack online, err: ${waitR}.`);
         return;
     }
+
     // register route
     const stack = checkStack().check();
     addRouters(stack, routers);

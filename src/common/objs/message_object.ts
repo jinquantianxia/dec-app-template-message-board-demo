@@ -2,7 +2,7 @@
 import * as cyfs from 'cyfs-sdk';
 import { AppObjectType } from '../types';
 import * as protos from './obj_proto_pb';
-import { checkObjectId, makeBuckyErr } from '../cyfs_helper/kits';
+
 // The first 16 bits of type are reserved by the system, and the type of the applied object should be greater than 32767
 export const MESSAGE_OBJECT_TYPE = AppObjectType.MESSAGE;
 
@@ -105,13 +105,6 @@ export class MessageBodyContentDecoder extends cyfs.ProtobufBodyContentDecoder<
     }
 }
 
-export class MessageBuilder extends cyfs.NamedObjectBuilder<
-    MessageDescContent,
-    MessageBodyContent
-> {
-    // default
-}
-
 export class MessageId extends cyfs.NamedObjectId<MessageDescContent, MessageBodyContent> {
     public constructor(id: cyfs.ObjectId) {
         super(MESSAGE_OBJECT_TYPE, id);
@@ -126,6 +119,13 @@ export class MessageIdDecoder extends cyfs.NamedObjectIdDecoder<
     public constructor() {
         super(MESSAGE_OBJECT_TYPE);
     }
+    // default
+}
+
+export class MessageBuilder extends cyfs.NamedObjectBuilder<
+    MessageDescContent,
+    MessageBodyContent
+> {
     // default
 }
 

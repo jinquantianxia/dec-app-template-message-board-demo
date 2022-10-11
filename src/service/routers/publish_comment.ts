@@ -48,7 +48,7 @@ export async function publisCommentRouter(
     if (lockR.err) {
         const errMsg = `lock failed, ${lockR}`;
         console.error(errMsg);
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
     console.log(`lock ${JSON.stringify(paths)} success.`);
@@ -68,7 +68,7 @@ export async function publisCommentRouter(
         object: nonObj
     });
     if (putR.err) {
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         const errMsg = `commit put-object failed, ${putR}.`;
         console.error(errMsg);
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
@@ -78,7 +78,7 @@ export async function publisCommentRouter(
     const objectId = nonObj.object_id;
     const rp = await pathOpEnv.insert_with_path(commentPath, objectId);
     if (rp.err) {
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         const errMsg = `commit insert_with_path(${commentPath}, ${objectId}), ${rp}.`;
         console.error(errMsg);
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));

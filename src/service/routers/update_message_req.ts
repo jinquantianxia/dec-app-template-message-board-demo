@@ -58,7 +58,7 @@ export async function updateMessageReqRouter(
     if (lockR.err) {
         const errMsg = `lock failed, ${lockR}`;
         console.error(errMsg);
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
 
@@ -70,14 +70,14 @@ export async function updateMessageReqRouter(
     if (idR.err) {
         const errMsg = `get_by_path (${queryMessagePath}) failed, ${idR}`;
         console.error(errMsg);
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
     const id = idR.unwrap();
     if (!id) {
         const errMsg = `unwrap failed after get_by_path (${queryMessagePath}) failed, ${idR}`;
         console.error(errMsg);
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
     }
 
@@ -97,7 +97,7 @@ export async function updateMessageReqRouter(
     });
     if (putR.err) {
         console.error(`commit put-object failed, ${putR}.`);
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return putR;
     }
 
@@ -109,7 +109,7 @@ export async function updateMessageReqRouter(
     );
     if (rs.err) {
         console.error(`commit set_with_path(${queryMessagePath},${objectId},${id}), ${rs}.`);
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return rs;
     }
     // transaction commit

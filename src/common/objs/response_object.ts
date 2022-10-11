@@ -105,13 +105,6 @@ export class ResponseObjectBodyContentDecoder extends cyfs.ProtobufBodyContentDe
     }
 }
 
-export class ResponseObjectBuilder extends cyfs.NamedObjectBuilder<
-    ResponseObjectDescContent,
-    ResponseObjectBodyContent
-> {
-    // default
-}
-
 export class ResponseObjectId extends cyfs.NamedObjectId<
     ResponseObjectDescContent,
     ResponseObjectBodyContent
@@ -132,6 +125,12 @@ export class ResponseObjectIdDecoder extends cyfs.NamedObjectIdDecoder<
     // default
 }
 
+export class ResponseObjectBuilder extends cyfs.NamedObjectBuilder<
+    ResponseObjectDescContent,
+    ResponseObjectBodyContent
+> {
+    // default
+}
 export class ResponseObject extends cyfs.NamedObject<
     ResponseObjectDescContent,
     ResponseObjectBodyContent

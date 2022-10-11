@@ -23,7 +23,7 @@
         "entry": "index.html"
     },
     "dist": "dist",
-    "owner_config": ".cyfs\\owner.json",
+    "owner_config": ".cyfs/owner.json",
     "ext_info": {
         "medias": []
     },

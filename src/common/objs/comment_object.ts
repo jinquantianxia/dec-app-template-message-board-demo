@@ -115,13 +115,6 @@ export class CommentBodyContentDecoder extends cyfs.ProtobufBodyContentDecoder<
     }
 }
 
-export class CommentBuilder extends cyfs.NamedObjectBuilder<
-    CommentDescContent,
-    CommentBodyContent
-> {
-    // default
-}
-
 export class CommentId extends cyfs.NamedObjectId<CommentDescContent, CommentBodyContent> {
     public constructor(id: cyfs.ObjectId) {
         super(COMMENT_OBJECT_TYPE, id);
@@ -136,6 +129,13 @@ export class CommentIdDecoder extends cyfs.NamedObjectIdDecoder<
     public constructor() {
         super(COMMENT_OBJECT_TYPE);
     }
+    // default
+}
+
+export class CommentBuilder extends cyfs.NamedObjectBuilder<
+    CommentDescContent,
+    CommentBodyContent
+> {
     // default
 }
 

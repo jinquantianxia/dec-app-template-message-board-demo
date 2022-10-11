@@ -60,7 +60,7 @@ export async function publishMessageReqRouter(
     if (lockR.err) {
         const errMsg = `lock failed, ${lockR}`;
         console.error(errMsg);
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         return Promise.resolve(cyfs.Err(new cyfs.BuckyError(cyfs.BuckyErrorCode.Failed, errMsg)));
     }
 
@@ -82,7 +82,7 @@ export async function publishMessageReqRouter(
         object: nonObj
     });
     if (putR.err) {
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         const errMsg = `commit put-object failed, ${putR}.`;
         console.error(errMsg);
         return Promise.resolve(cyfs.Err(new cyfs.BuckyError(cyfs.BuckyErrorCode.Failed, errMsg)));
@@ -92,7 +92,7 @@ export async function publishMessageReqRouter(
     const objectId = nonObj.object_id;
     const rp = await pathOpEnv.insert_with_path(msgPath, objectId);
     if (rp.err) {
-        pathOpEnv.abort();
+        await pathOpEnv.abort();
         const errMsg = `commit insert_with_path(${msgPath}, ${objectId}), ${rp}.`;
         console.error(errMsg);
         return Promise.resolve(cyfs.Err(new cyfs.BuckyError(cyfs.BuckyErrorCode.Failed, errMsg)));

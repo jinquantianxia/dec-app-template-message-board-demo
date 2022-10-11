@@ -572,7 +572,7 @@ export class StackWraper {
                 console.error(`wait online err: ${r.val}`);
             } else {
                 console.info('online success.');
-                console.info(`device: ${this.m_stack.local_device_id}`);
+                console.info(`device: ${this.m_stack.local_device_id()}`);
                 console.info(`owner: ${this.m_stack.local_device().desc().owner()?.unwrap()}`);
                 break;
             }
