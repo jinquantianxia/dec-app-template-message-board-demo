@@ -12,7 +12,7 @@ import { ResponseObjectDecoder } from '../../common/objs/response_object';
 import { ROUTER_PATHS } from '../../common/routers';
 
 async function init() {
-    useSimulator(SimulatorZoneNo.REAL, SimulatorDeviceNo.FIRST);
+    useSimulator(SimulatorZoneNo.FIRST, SimulatorDeviceNo.FIRST);
     await waitStackRuntime(DEC_ID);
 }
 
@@ -40,7 +40,7 @@ async function updateMessage(msgKey: string, content: string) {
 
     if (r) {
         const retObj = {
-            err: r.err,
+            err: r.errCode,
             msg: r.msg
         };
         return JSON.stringify(retObj);
@@ -51,10 +51,10 @@ async function updateMessage(msgKey: string, content: string) {
 async function main() {
     await init();
     const msgKey = '';
-    const content = 'test message666666666';
+    const content = 'Updated test message.';
     const r = await updateMessage(msgKey, content);
     if (r) {
-        console.log(`update message successed: ${r}`);
+        console.log(`update message result: ${r}`);
     } else {
         console.error('update message failed.');
     }

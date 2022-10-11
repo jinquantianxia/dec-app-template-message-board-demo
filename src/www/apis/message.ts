@@ -32,7 +32,7 @@ export async function publishMessage(content: string) {
     const r = ret.unwrap();
     if (r) {
         const retObj = {
-            err: r.err,
+            err: r.errCode,
             msg: r.msg
         };
         console.log(`reponse, ${retObj}`);
@@ -64,7 +64,7 @@ export async function deleteMessage(msgKey: string) {
     const r = ret.unwrap();
     if (r) {
         const retObj = {
-            err: r.err,
+            err: r.errCode,
             msg: r.msg
         };
         console.log(`reponse, ${retObj}`);
@@ -98,7 +98,7 @@ export async function updateMessage(msgKey: string, content: string) {
 
     if (r) {
         const retObj = {
-            err: r.err,
+            err: r.errCode,
             msg: r.msg
         };
         console.log(`reponse, ${retObj}`);

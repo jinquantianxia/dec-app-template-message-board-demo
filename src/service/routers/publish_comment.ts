@@ -1,11 +1,10 @@
 import * as cyfs from 'cyfs-sdk';
 import { CommentDecoder } from '../../common/objs/comment_object';
-import { ResponseObject, ResponseObjectDecoder } from '../../common/objs/response_object';
+import { ResponseObjectDecoder } from '../../common/objs/response_object';
 import { checkStack } from '../../common/cyfs_helper/stack_wraper';
-import { toNONObjectInfo, makeBuckyErr } from '../../common/cyfs_helper/kits';
 import { AppObjectType } from '../../common/types';
-import { ROUTER_PATHS, PublishCommentResponseParam } from '../../common/routers';
-import { getFriendPeopleId } from '../util';
+import { ROUTER_PATHS, PublishCommentRequestParam } from '../../common/routers';
+import { getFriendPeopleId, makeCommonResponse } from '../util';
 
 export async function publisCommentRouter(
     req: cyfs.RouterHandlerPostObjectRequest
@@ -13,28 +12,28 @@ export async function publisCommentRouter(
     // Parse out the request object and determine whether the request object is an Comment object
     const { object, object_raw } = req.request.object;
     if (!object || object.obj_type() !== AppObjectType.COMMENT) {
-        const msg = 'obj_type err.';
-        console.error(msg);
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InvalidParam, msg));
+        const errMsg = 'object not exist or obj_type err.';
+        console.error(errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.InvalidParam, errMsg);
     }
 
     // Use OrderDecoder to decode the Comment object
     const decoder = new CommentDecoder();
     const dr = decoder.from_raw(object_raw);
     if (dr.err) {
-        const msg = `decode failed, ${dr}.`;
-        console.error(msg);
-        return dr;
+        const errMsg = `decode failed, ${dr}.`;
+        console.error(errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
-    const commentObject = dr.unwrap();
+    const commentObject: PublishCommentRequestParam = dr.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
     const stack = checkStack().check();
     const r = await stack.root_state_stub().create_path_op_env();
     if (r.err) {
-        const msg = `create_path_op_env failed, ${r}.`;
-        console.error(msg);
-        return r;
+        const errMsg = `create_path_op_env failed, ${r}.`;
+        console.error(errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
     const pathOpEnv = r.unwrap();
 
@@ -49,7 +48,7 @@ export async function publisCommentRouter(
         const errMsg = `lock failed, ${lockR}`;
         console.error(errMsg);
         await pathOpEnv.abort();
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
     console.log(`lock ${JSON.stringify(paths)} success.`);
 
@@ -71,7 +70,7 @@ export async function publisCommentRouter(
         await pathOpEnv.abort();
         const errMsg = `commit put-object failed, ${putR}.`;
         console.error(errMsg);
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // Use the object_id of NONObjectInfo for the transaction operation of creating a new Comment object
@@ -81,7 +80,7 @@ export async function publisCommentRouter(
         await pathOpEnv.abort();
         const errMsg = `commit insert_with_path(${commentPath}, ${objectId}), ${rp}.`;
         console.error(errMsg);
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // transaction commit
@@ -89,18 +88,10 @@ export async function publisCommentRouter(
     if (ret.err) {
         const errMsg = `commit failed, ${ret}.`;
         console.error(errMsg);
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
     // Transaction operation succeeded
     console.log('publish new comment success.');
-
-    // Create a ResponseObject object as a response parameter and send the result to the front end
-    const respObj: PublishCommentResponseParam = ResponseObject.create({
-        err: 0,
-        msg: 'ok',
-        decId: stack.dec_id!,
-        owner: checkStack().checkOwner()
-    });
 
     // Cross-zone notification, notify the specified user OOD
     const stackWraper = checkStack();
@@ -110,12 +101,7 @@ export async function publisCommentRouter(
         decId: stack.dec_id!,
         target: cyfs.PeopleId.from_base_58(peopleId).unwrap().object_id // Here is the difference between the same zone and cross zone.
     });
-    return Promise.resolve(
-        cyfs.Ok({
-            action: cyfs.RouterHandlerAction.Response,
-            response: cyfs.Ok({
-                object: toNONObjectInfo(respObj)
-            })
-        })
-    );
+
+    // Create a ResponseObject object as a response parameter and send the result to the front end
+    return makeCommonResponse();
 }

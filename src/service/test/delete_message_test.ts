@@ -12,7 +12,7 @@ import { ResponseObjectDecoder } from '../../common/objs/response_object';
 import { ROUTER_PATHS } from '../../common/routers';
 
 async function init() {
-    useSimulator(SimulatorZoneNo.REAL, SimulatorDeviceNo.FIRST);
+    useSimulator(SimulatorZoneNo.FIRST, SimulatorDeviceNo.FIRST);
     await waitStackRuntime(DEC_ID);
 }
 
@@ -38,7 +38,7 @@ async function deleteMessage(msgKey: string) {
     const r = ret.unwrap();
     if (r) {
         const retObj = {
-            err: r.err,
+            err: r.errCode,
             msg: r.msg
         };
         return JSON.stringify(retObj);
@@ -51,7 +51,7 @@ async function main() {
     const msgKey = '';
     const r = await deleteMessage(msgKey);
     if (r) {
-        console.log('delete message successed');
+        console.log(`delete message result: ${r}`);
     } else {
         console.error('delete message failed.');
     }

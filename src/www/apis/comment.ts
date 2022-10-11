@@ -33,7 +33,7 @@ export async function publishComment(msgId: string, content: string) {
     const r = ret.unwrap();
     if (r) {
         const retObj = {
-            err: r.err,
+            err: r.errCode,
             msg: r.msg
         };
         console.log(`reponse, ${retObj}`);

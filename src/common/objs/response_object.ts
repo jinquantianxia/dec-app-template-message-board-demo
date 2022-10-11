@@ -26,9 +26,9 @@ const RESPONSE_TYPE_INFO = new ResponseObjectDescTypeInfo();
 export class ResponseObjectDescContent extends cyfs.ProtobufDescContent {
     private m_err: number;
     private m_msg: string;
-    public constructor(err: number, msg: string) {
+    public constructor(errCode: number, msg: string) {
         super();
-        this.m_err = err;
+        this.m_err = errCode;
         this.m_msg = msg;
     }
 
@@ -44,7 +44,7 @@ export class ResponseObjectDescContent extends cyfs.ProtobufDescContent {
         return cyfs.Ok(target);
     }
 
-    public get err(): number {
+    public get errCode(): number {
         return this.m_err;
     }
 
@@ -68,9 +68,9 @@ export class ResponseObjectDescContentDecoder extends cyfs.ProtobufDescContentDe
     public try_from_proto(
         ResponseObject: protos.ResponseObject
     ): cyfs.BuckyResult<ResponseObjectDescContent> {
-        const err = ResponseObject.getErr();
+        const errCode = ResponseObject.getErr();
         const msg = ResponseObject.getMsg();
-        return cyfs.Ok(new ResponseObjectDescContent(err, msg));
+        return cyfs.Ok(new ResponseObjectDescContent(errCode, msg));
     }
 }
 
@@ -136,19 +136,19 @@ export class ResponseObject extends cyfs.NamedObject<
     ResponseObjectBodyContent
 > {
     public static create(param: {
-        err: number;
+        errCode: number;
         msg: string;
         decId: cyfs.ObjectId;
         owner: cyfs.ObjectId;
     }): ResponseObject {
-        const descContent = new ResponseObjectDescContent(param.err, param.msg);
+        const descContent = new ResponseObjectDescContent(param.errCode, param.msg);
         const bodyContent = new ResponseObjectBodyContent();
         const builder = new ResponseObjectBuilder(descContent, bodyContent);
         return builder.dec_id(param.decId).owner(param.owner).build(ResponseObject);
     }
 
-    public get err(): number {
-        return this.desc().content().err;
+    public get errCode(): number {
+        return this.desc().content().errCode;
     }
 
     public get msg(): string {

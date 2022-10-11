@@ -2,10 +2,9 @@ import * as cyfs from 'cyfs-sdk';
 import { MessageDecoder } from '../../common/objs/message_object';
 import { checkStack } from '../../common/cyfs_helper/stack_wraper';
 import { AppObjectType } from '../../common/types';
-import { UpdateMessageResponseParam, ROUTER_PATHS } from '../../common/routers';
-import { ResponseObject, ResponseObjectDecoder } from '../../common/objs/response_object';
-import { toNONObjectInfo, makeBuckyErr } from '../../common/cyfs_helper/kits';
-import { getFriendPeopleId } from '../util';
+import { ROUTER_PATHS, UpdateMessageRequestParam } from '../../common/routers';
+import { ResponseObjectDecoder } from '../../common/objs/response_object';
+import { getFriendPeopleId, makeCommonResponse } from '../util';
 
 export async function updateMessageRouter(
     req: cyfs.RouterHandlerPostObjectRequest
@@ -13,28 +12,28 @@ export async function updateMessageRouter(
     // Parse out the request object and determine whether the request object is an Message object
     const { object, object_raw } = req.request.object;
     if (!object || object.obj_type() !== AppObjectType.MESSAGE) {
-        const msg = 'obj_type err.';
-        console.error(msg);
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InvalidParam, msg));
+        const errMsg = 'object not exist or obj_type err.';
+        console.error(errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.InvalidParam, errMsg);
     }
 
     // Use MessageDecoder to decode the Message object
     const decoder = new MessageDecoder();
     const r = decoder.from_raw(object_raw);
     if (r.err) {
-        const msg = `decode failed, ${r}.`;
-        console.error(msg);
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InvalidParam, msg));
+        const errMsg = `decode failed, ${r}.`;
+        console.error(errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
-    const MessageObject = r.unwrap();
+    const MessageObject: UpdateMessageRequestParam = r.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
     const stack = checkStack().check();
     let createRet = await stack.root_state_stub().create_path_op_env();
     if (createRet.err) {
-        const msg = `create_path_op_env failed, ${createRet}.`;
-        console.error(msg);
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InternalError, msg));
+        const errMsg = `create_path_op_env failed, ${createRet}.`;
+        console.error(errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
     const pathOpEnv = createRet.unwrap();
 
@@ -47,7 +46,7 @@ export async function updateMessageRouter(
         const errMsg = `lock failed, ${lockR}`;
         console.error(errMsg);
         await pathOpEnv.abort();
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // Locked successfully
@@ -58,13 +57,13 @@ export async function updateMessageRouter(
     if (idR.err) {
         const errMsg = `get_by_path (${queryMessagePath}) failed, ${idR}`;
         await pathOpEnv.abort();
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
     const oldObjectId = idR.unwrap();
     if (!oldObjectId) {
         const errMsg = `unwrap failed after get_by_path (${queryMessagePath}) failed, ${idR}`;
         await pathOpEnv.abort();
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // Use the new Message object information to create the corresponding NONObjectInfo object, and update the NONObjectInfo object to RootState through the put_object operation
@@ -82,9 +81,10 @@ export async function updateMessageRouter(
         object: nonObj
     });
     if (putR.err) {
-        console.error(`commit put-object failed, ${putR}.`);
+        const errMsg = `commit put-object failed, ${putR}.`;
+        console.error(errMsg);
         await pathOpEnv.abort();
-        return putR;
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // Using pathOpEnv, the transaction operation of replacing the old Message object with the object_id of the NONObjectInfo object of the new Message object
@@ -94,44 +94,30 @@ export async function updateMessageRouter(
         `set_with_path(${queryMessagePath}, ${newObjectId!.to_base_58()}, ${oldObjectId.to_base_58()}, true), ${rs}`
     );
     if (rs.err) {
-        console.error(
-            `commit set_with_path(${queryMessagePath},${newObjectId},${oldObjectId}), ${rs}.`
-        );
+        const errMsg = `commit set_with_path(${queryMessagePath},${newObjectId},${oldObjectId}), ${rs}.`;
+        console.error(errMsg);
         await pathOpEnv.abort();
-        return rs;
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
     // transaction commit
     const ret = await pathOpEnv.commit();
     if (ret.err) {
         const errMsg = `commit failed, ${ret}`;
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // Transaction operation succeeded
-    console.log('publish new message success.');
+    console.log('update message success.');
 
     // Cross-zone notification, notify the specified user OOD
-    const stackWraper = checkStack();
-    const peopleId = getFriendPeopleId();
-    await stackWraper.postObject(MessageObject, ResponseObjectDecoder, {
-        reqPath: ROUTER_PATHS.UPDATE_MESSAGE_REQ,
-        decId: stack.dec_id!,
-        target: cyfs.PeopleId.from_base_58(peopleId).unwrap().object_id // Here is the difference between the same zone and cross zone.
-    });
+    // const stackWraper = checkStack();
+    // const peopleId = getFriendPeopleId();
+    // await stackWraper.postObject(MessageObject, ResponseObjectDecoder, {
+    //     reqPath: ROUTER_PATHS.UPDATE_MESSAGE_REQ,
+    //     decId: stack.dec_id!,
+    //     target: cyfs.PeopleId.from_base_58(peopleId).unwrap().object_id // Here is the difference between the same zone and cross zone.
+    // });
 
     // Create a ResponseObject object as a response parameter and send the result to the front end
-    const respObj: UpdateMessageResponseParam = ResponseObject.create({
-        err: 0,
-        msg: 'ok',
-        decId: stack.dec_id!,
-        owner: checkStack().checkOwner()
-    });
-    return Promise.resolve(
-        cyfs.Ok({
-            action: cyfs.RouterHandlerAction.Response,
-            response: cyfs.Ok({
-                object: toNONObjectInfo(respObj)
-            })
-        })
-    );
+    return makeCommonResponse();
 }

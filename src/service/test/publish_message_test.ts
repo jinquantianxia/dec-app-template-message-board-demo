@@ -12,7 +12,7 @@ import { ResponseObjectDecoder } from '../../common/objs/response_object';
 import { ROUTER_PATHS } from '../../common/routers';
 
 async function init() {
-    useSimulator(SimulatorZoneNo.REAL, SimulatorDeviceNo.FIRST);
+    useSimulator(SimulatorZoneNo.FIRST, SimulatorDeviceNo.FIRST);
     await waitStackRuntime(DEC_ID);
 }
 
@@ -38,7 +38,7 @@ async function publishMessage(msgKey: string, content: string) {
     const r = ret.unwrap();
     if (r) {
         const retObj = {
-            err: r.err,
+            err: r.errCode,
             msg: r.msg
         };
         return JSON.stringify(retObj);
@@ -49,10 +49,10 @@ async function publishMessage(msgKey: string, content: string) {
 async function main() {
     await init();
     const msgKey = generateUniqueKey();
-    const content = 'test Message111';
+    const content = 'This is a test Message.';
     const r = await publishMessage(msgKey, content);
     if (r) {
-        console.log(`publish message successed msgKey is ${msgKey}, result: ${r}`);
+        console.log(`publish message msgKey is ${msgKey}, result: ${r}`);
     } else {
         console.error('publish message failed.');
     }

@@ -2,11 +2,8 @@ import * as cyfs from 'cyfs-sdk';
 import { MessageDecoder } from '../../common/objs/message_object';
 import { checkStack } from '../../common/cyfs_helper/stack_wraper';
 import { AppObjectType } from '../../common/types';
-import { DeleteMessageResponseParam } from '../../common/routers';
-import { ResponseObject } from '../../common/objs/response_object';
-import { toNONObjectInfo, makeBuckyErr } from '../../common/cyfs_helper/kits';
-import { ResponseObjectDecoder } from '../../common/objs/response_object';
-import { ROUTER_PATHS } from '../../common/routers';
+import { DeleteMessageReqRequestParam } from '../../common/routers';
+import { getFriendPeopleId, makeCommonResponse } from '../util';
 
 export async function deleteMessageReqRouter(
     req: cyfs.RouterHandlerPostObjectRequest
@@ -24,11 +21,13 @@ export async function deleteMessageReqRouter(
             })
         );
     }
+
+    // Parse out the request object and determine whether the request object is an Message object
     const { object, object_raw } = req.request.object;
     if (!object || object.obj_type() !== AppObjectType.MESSAGE) {
-        const errMsg = 'obj_type err.';
-        console.error(errMsg);
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InvalidParam, errMsg));
+        const msg = 'object not exist or obj_type err.';
+        console.error(msg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.InvalidParam, msg);
     }
 
     // Use MessageDecoder to decode the Message object
@@ -37,16 +36,16 @@ export async function deleteMessageReqRouter(
     if (r.err) {
         const errMsg = `decode failed, ${r}.`;
         console.error(errMsg);
-        return r;
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
-    const MessageObj = r.unwrap();
+    const MessageObj: DeleteMessageReqRequestParam = r.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
     let createRet = await stack.root_state_stub().create_path_op_env();
     if (createRet.err) {
         const errMsg = `create_path_op_env failed, ${createRet}.`;
         console.error(errMsg);
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InternalError, errMsg));
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
     const pathOpEnv = createRet.unwrap();
 
@@ -59,7 +58,7 @@ export async function deleteMessageReqRouter(
         const errMsg = `lock failed, ${lockR}`;
         console.error(errMsg);
         await pathOpEnv.abort();
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // Locked successfully
@@ -70,47 +69,35 @@ export async function deleteMessageReqRouter(
     if (idR.err) {
         const errMsg = `get_by_path (${queryMessagePath}) failed, ${idR}`;
         await pathOpEnv.abort();
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
     const objectId = idR.unwrap();
     if (!objectId) {
         const errMsg = `unwrap failed after get_by_path (${queryMessagePath}) failed, ${idR}`;
         await pathOpEnv.abort();
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // Use the remove_with_path method of pathOpEnv to pass in the object_id of the Message object to be deleted for the transaction operation of deleting the Message object
     const rm = await pathOpEnv.remove_with_path(queryMessagePath, objectId);
     console.log(`remove_with_path(${queryMessagePath}, ${objectId.to_base_58()}), ${rm}`);
     if (rm.err) {
-        console.error(`commit remove_with_path(${queryMessagePath}, ${objectId}), ${rm}.`);
+        const errMsg = `commit remove_with_path(${queryMessagePath}, ${objectId}), ${rm}.`;
+        console.error(errMsg);
         await pathOpEnv.abort();
-        return rm;
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // transaction commit
     const ret = await pathOpEnv.commit();
     if (ret.err) {
         const errMsg = `commit failed, ${ret}`;
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg));
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // Transaction operation succeeded
     console.log('delete Message success.');
 
     // Create a ResponseObject object as a response parameter and send the result to the front end
-    const respObj: DeleteMessageResponseParam = ResponseObject.create({
-        err: 0,
-        msg: 'ok',
-        decId: stack.dec_id!,
-        owner: checkStack().checkOwner()
-    });
-    return Promise.resolve(
-        cyfs.Ok({
-            action: cyfs.RouterHandlerAction.Response,
-            response: cyfs.Ok({
-                object: toNONObjectInfo(respObj)
-            })
-        })
-    );
+    return makeCommonResponse();
 }

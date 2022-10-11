@@ -2,7 +2,9 @@ import * as cyfs from 'cyfs-sdk';
 import { MessageDecoder } from '../../common/objs/message_object';
 import { checkStack } from '../../common/cyfs_helper/stack_wraper';
 import { AppObjectType } from '../../common/types';
-import { toNONObjectInfo, makeBuckyErr } from '../../common/cyfs_helper/kits';
+import { toNONObjectInfo } from '../../common/cyfs_helper/kits';
+import { RetrieveMessageRequestParam } from '../../common/routers';
+import { makeCommonResponse } from '../util';
 
 export async function retrieveMessageRouter(
     req: cyfs.RouterHandlerPostObjectRequest
@@ -10,28 +12,28 @@ export async function retrieveMessageRouter(
     // Parse out the request object and determine whether the request object is an Message object
     const { object, object_raw } = req.request.object;
     if (!object || object.obj_type() !== AppObjectType.MESSAGE) {
-        const msg = `obj_type err.`;
-        console.error(msg);
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.InvalidParam, msg));
+        const errMsg = `object not exist or obj_type err.`;
+        console.error(errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.InvalidParam, errMsg);
     }
 
     // Use MessageDecoder to decode the Message object
     const messageDecoder = new MessageDecoder();
     const dr = messageDecoder.from_raw(object_raw);
     if (dr.err) {
-        const msg = `decode failed, ${dr}.`;
-        console.error(msg);
-        return Promise.resolve(makeBuckyErr(cyfs.BuckyErrorCode.Failed, msg));
+        const errMsg = `decode failed, ${dr}.`;
+        console.error(errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
-    const MessageObject = dr.unwrap();
+    const MessageObject: RetrieveMessageRequestParam = dr.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
     const stack = checkStack().check();
     const createRet = await stack.root_state_stub().create_path_op_env();
     if (createRet.err) {
-        const msg = `create_path_op_env failed, ${createRet}.`;
-        console.error(msg);
-        return makeBuckyErr(cyfs.BuckyErrorCode.InternalError, msg);
+        const errMsg = `create_path_op_env failed, ${createRet}.`;
+        console.error(errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
     const pathOpEnv = createRet.unwrap();
 
@@ -44,7 +46,7 @@ export async function retrieveMessageRouter(
         const errMsg = `lock failed, ${lockR}`;
         console.error(errMsg);
         await pathOpEnv.abort();
-        return makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // Locked successfully
@@ -56,14 +58,14 @@ export async function retrieveMessageRouter(
         const errMsg = `get_by_path (${queryMessagePath}) failed, ${idR}`;
         console.error(errMsg);
         await pathOpEnv.abort();
-        return makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
     const objectId = idR.unwrap();
     if (!objectId) {
         const errMsg = `objectId not found after get_by_path (${queryMessagePath}), ${idR}`;
         console.error(errMsg);
         await pathOpEnv.abort();
-        return makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // Use the get_object method to obtain the cyfs.NONGetObjectOutputResponse object corresponding to the Message object from RootState with the object_id of the Message object as a parameter
@@ -75,7 +77,7 @@ export async function retrieveMessageRouter(
         const errMsg = `get_object from non_service failed, path(${queryMessagePath}), ${idR}`;
         console.error(errMsg);
         await pathOpEnv.abort();
-        return makeBuckyErr(cyfs.BuckyErrorCode.Failed, errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
     // After releasing the lock, decode the Message object in Uint8Array format to get the final Message object
@@ -84,11 +86,12 @@ export async function retrieveMessageRouter(
     const decoder = new MessageDecoder();
     const r = decoder.from_raw(MessageResult);
     if (r.err) {
-        const msg = `decode failed, ${r}.`;
-        console.error(msg);
-        return makeBuckyErr(cyfs.BuckyErrorCode.Failed, 'decode Message obj from raw excepted.');
+        const errMsg = `decode failed, ${r}.`;
+        console.error(errMsg);
+        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
     const MessageObj = r.unwrap();
+
     // Return the decoded Message object to the front end
     return cyfs.Ok({
         action: cyfs.RouterHandlerAction.Response,

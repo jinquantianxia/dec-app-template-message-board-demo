@@ -13,7 +13,7 @@ import { ResponseObjectDecoder } from '../../common/objs/response_object';
 import { ROUTER_PATHS } from '../../common/routers';
 
 async function init() {
-    useSimulator(SimulatorZoneNo.REAL, SimulatorDeviceNo.FIRST);
+    useSimulator(SimulatorZoneNo.FIRST, SimulatorDeviceNo.FIRST);
     await waitStackRuntime(DEC_ID);
 }
 
@@ -50,7 +50,7 @@ async function main() {
     const msgKey = '';
     const r = await retrieveMessage(msgKey);
     if (r) {
-        console.log(`retrieve message successed: ${r}`);
+        console.log(`retrieve message result: ${r}`);
     } else {
         console.error('retrieve message failed.');
     }
