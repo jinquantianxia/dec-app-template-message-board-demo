@@ -38,7 +38,7 @@ export async function publishMessageReqRouter(
         console.error(errMsg);
         return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
-    const msgObject: PublishMessageReqRequestParam = dr.unwrap();
+    const messageObject: PublishMessageReqRequestParam = dr.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
     const r = await stack.root_state_stub().create_path_op_env();
@@ -50,7 +50,7 @@ export async function publishMessageReqRouter(
     const pathOpEnv = r.unwrap();
 
     // Determine the path where the new Message object will be stored and lock the path
-    const msgPath = `/messages_list/${msgObject.key}`;
+    const msgPath = `/messages_list/${messageObject.key}`;
     const paths = [msgPath];
     console.log(`will lock paths ${JSON.stringify(paths)}`);
     const lockR = await pathOpEnv.lock(paths, cyfs.JSBI.BigInt(30000));
@@ -65,8 +65,8 @@ export async function publishMessageReqRouter(
     // Use the Message object information to create the corresponding NONObjectInfo object, and add the NONObjectInfo object to the RootState through the put_object operation
     const decId = stack.dec_id!;
     const nonObj = new cyfs.NONObjectInfo(
-        msgObject.desc().object_id(),
-        msgObject.encode_to_buf().unwrap()
+        messageObject.desc().object_id(),
+        messageObject.encode_to_buf().unwrap()
     );
     const putR = await stack.non_service().put_object({
         common: {

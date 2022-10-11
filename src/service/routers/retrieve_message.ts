@@ -25,7 +25,7 @@ export async function retrieveMessageRouter(
         console.error(errMsg);
         return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
-    const MessageObject: RetrieveMessageRequestParam = dr.unwrap();
+    const messageObject: RetrieveMessageRequestParam = dr.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
     const stack = checkStack().check();
@@ -38,7 +38,7 @@ export async function retrieveMessageRouter(
     const pathOpEnv = createRet.unwrap();
 
     // Determine the storage path of the Message object to be queried and lock the path
-    const queryMessagePath = `/messages_list/${MessageObject.key}`;
+    const queryMessagePath = `/messages_list/${messageObject.key}`;
     const paths = [queryMessagePath];
     console.log(`will lock paths ${JSON.stringify(paths)}`);
     const lockR = await pathOpEnv.lock(paths, cyfs.JSBI.BigInt(30000));

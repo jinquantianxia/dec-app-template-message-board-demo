@@ -26,7 +26,7 @@ export async function deleteMessageRouter(
         console.error(errMsg);
         return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
-    const MessageObj: DeleteMessageRequestParam = r.unwrap();
+    const messageObject: DeleteMessageRequestParam = r.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
     const stack = checkStack().check();
@@ -39,7 +39,7 @@ export async function deleteMessageRouter(
     const pathOpEnv = createRet.unwrap();
 
     // Determine the storage path of the Message object to be deleted and lock the path
-    const queryMessagePath = `/messages_list/${MessageObj.key}`;
+    const queryMessagePath = `/messages_list/${messageObject.key}`;
     const paths = [queryMessagePath];
     console.log(`will lock paths ${JSON.stringify(paths)}`);
     const lockR = await pathOpEnv.lock(paths, cyfs.JSBI.BigInt(30000));
@@ -90,7 +90,7 @@ export async function deleteMessageRouter(
     // Cross-zone notification, notify the specified user OOD
     // const stackWraper = checkStack();
     // const peopleId = getFriendPeopleId();
-    // await stackWraper.postObject(MessageObj, ResponseObjectDecoder, {
+    // await stackWraper.postObject(messageObject, ResponseObjectDecoder, {
     //     reqPath: ROUTER_PATHS.DELETE_MESSAGE_REQ,
     //     decId: stack.dec_id!,
     //     target: cyfs.PeopleId.from_base_58(peopleId).unwrap().object_id // Here is the difference between the same zone and cross zone.

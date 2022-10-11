@@ -36,7 +36,7 @@ export async function updateMessageReqRouter(
         console.error(errMsg);
         return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
-    const MessageObject: UpdateMessageReqRequestParam = r.unwrap();
+    const messageObject: UpdateMessageReqRequestParam = r.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
     let createRet = await stack.root_state_stub().create_path_op_env();
@@ -48,7 +48,7 @@ export async function updateMessageReqRouter(
     const pathOpEnv = createRet.unwrap();
 
     // Determine the storage path of the Message object to be updated and lock the path
-    const queryMessagePath = `/messages_list/${MessageObject.key}`;
+    const queryMessagePath = `/messages_list/${messageObject.key}`;
     const paths = [queryMessagePath];
     console.log(`will lock paths ${JSON.stringify(paths)}`);
     const lockR = await pathOpEnv.lock(paths, cyfs.JSBI.BigInt(30000));
@@ -78,8 +78,8 @@ export async function updateMessageReqRouter(
 
     // Use the new Message object information to create the corresponding NONObjectInfo object, and update the NONObjectInfo object to RootState through the put_object operation
     const nonObj = new cyfs.NONObjectInfo(
-        MessageObject.desc().object_id(),
-        MessageObject.encode_to_buf().unwrap()
+        messageObject.desc().object_id(),
+        messageObject.encode_to_buf().unwrap()
     );
     const decId = stack.dec_id!;
     const putR = await stack.non_service().put_object({

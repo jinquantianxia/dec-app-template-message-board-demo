@@ -25,7 +25,7 @@ export async function updateMessageRouter(
         console.error(errMsg);
         return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
-    const MessageObject: UpdateMessageRequestParam = r.unwrap();
+    const messageObject: UpdateMessageRequestParam = r.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
     const stack = checkStack().check();
@@ -38,7 +38,7 @@ export async function updateMessageRouter(
     const pathOpEnv = createRet.unwrap();
 
     // Determine the storage path of the Message object to be updated and lock the path
-    const queryMessagePath = `/messages_list/${MessageObject.key}`;
+    const queryMessagePath = `/messages_list/${messageObject.key}`;
     const paths = [queryMessagePath];
     console.log(`will lock paths ${JSON.stringify(paths)}`);
     const lockR = await pathOpEnv.lock(paths, cyfs.JSBI.BigInt(30000));
@@ -68,8 +68,8 @@ export async function updateMessageRouter(
 
     // Use the new Message object information to create the corresponding NONObjectInfo object, and update the NONObjectInfo object to RootState through the put_object operation
     const nonObj = new cyfs.NONObjectInfo(
-        MessageObject.desc().object_id(),
-        MessageObject.encode_to_buf().unwrap()
+        messageObject.desc().object_id(),
+        messageObject.encode_to_buf().unwrap()
     );
     const decId = stack.dec_id!;
     const putR = await stack.non_service().put_object({
@@ -112,7 +112,7 @@ export async function updateMessageRouter(
     // Cross-zone notification, notify the specified user OOD
     // const stackWraper = checkStack();
     // const peopleId = getFriendPeopleId();
-    // await stackWraper.postObject(MessageObject, ResponseObjectDecoder, {
+    // await stackWraper.postObject(messageObject, ResponseObjectDecoder, {
     //     reqPath: ROUTER_PATHS.UPDATE_MESSAGE_REQ,
     //     decId: stack.dec_id!,
     //     target: cyfs.PeopleId.from_base_58(peopleId).unwrap().object_id // Here is the difference between the same zone and cross zone.

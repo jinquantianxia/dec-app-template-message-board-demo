@@ -13,7 +13,7 @@ import { ResponseObjectDecoder } from '../../common/objs/response_object';
 import { ROUTER_PATHS } from '../../common/routers';
 
 async function init() {
-    useSimulator(SimulatorZoneNo.FIRST, SimulatorDeviceNo.FIRST);
+    useSimulator(SimulatorZoneNo.REAL, SimulatorDeviceNo.FIRST);
     await waitStackRuntime(DEC_ID);
 }
 

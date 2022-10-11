@@ -38,7 +38,7 @@ export async function deleteMessageReqRouter(
         console.error(errMsg);
         return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
-    const MessageObj: DeleteMessageReqRequestParam = r.unwrap();
+    const messageObject: DeleteMessageReqRequestParam = r.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
     let createRet = await stack.root_state_stub().create_path_op_env();
@@ -50,7 +50,7 @@ export async function deleteMessageReqRouter(
     const pathOpEnv = createRet.unwrap();
 
     // Determine the storage path of the Message object to be deleted and lock the path
-    const queryMessagePath = `/messages_list/${MessageObj.key}`;
+    const queryMessagePath = `/messages_list/${messageObject.key}`;
     const paths = [queryMessagePath];
     console.log(`will lock paths ${JSON.stringify(paths)}`);
     const lockR = await pathOpEnv.lock(paths, cyfs.JSBI.BigInt(30000));

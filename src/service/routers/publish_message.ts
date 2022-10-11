@@ -26,7 +26,7 @@ export async function publishMessageRouter(
         console.error(errMsg);
         return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
-    const msgObject: PublishMessageRequestParam = dr.unwrap();
+    const messageObject: PublishMessageRequestParam = dr.unwrap();
 
     // Create pathOpEnv to perform transaction operations on objects on RootState
     const stack = checkStack().check();
@@ -39,7 +39,7 @@ export async function publishMessageRouter(
     const pathOpEnv = r.unwrap();
 
     // Determine the path where the new Message object will be stored and lock the path
-    const msgPath = `/messages_list/${msgObject.key}`;
+    const msgPath = `/messages_list/${messageObject.key}`;
     const paths = [msgPath];
     console.log(`will lock paths ${JSON.stringify(paths)}`);
     const lockR = await pathOpEnv.lock(paths, cyfs.JSBI.BigInt(30000));
@@ -54,8 +54,8 @@ export async function publishMessageRouter(
     // Use the Message object information to create the corresponding NONObjectInfo object, and add the NONObjectInfo object to the RootState through the put_object operation
     const decId = stack.dec_id!;
     const nonObj = new cyfs.NONObjectInfo(
-        msgObject.desc().object_id(),
-        msgObject.encode_to_buf().unwrap()
+        messageObject.desc().object_id(),
+        messageObject.encode_to_buf().unwrap()
     );
     const putR = await stack.non_service().put_object({
         common: {
@@ -95,7 +95,7 @@ export async function publishMessageRouter(
     // Cross-zone notification, notify the specified user OOD
     // const stackWraper = checkStack();
     // const peopleId = getFriendPeopleId();
-    // await stackWraper.postObject(msgObject, ResponseObjectDecoder, {
+    // await stackWraper.postObject(messageObject, ResponseObjectDecoder, {
     //     reqPath: ROUTER_PATHS.PUBLISH_MESSAGE_REQ,
     //     decId: stack.dec_id!,
     //     target: cyfs.PeopleId.from_base_58(peopleId).unwrap().object_id // Here is the difference between the same zone and cross zone.
