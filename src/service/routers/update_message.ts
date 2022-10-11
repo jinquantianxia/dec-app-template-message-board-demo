@@ -4,7 +4,7 @@ import { checkStack } from '../../common/cyfs_helper/stack_wraper';
 import { AppObjectType } from '../../common/types';
 import { ROUTER_PATHS, UpdateMessageRequestParam } from '../../common/routers';
 import { ResponseObjectDecoder } from '../../common/objs/response_object';
-import { getFriendPeopleId, makeCommonResponse } from '../util';
+import { getFriendPeopleIds, makeCommonResponse } from '../util';
 
 export async function updateMessageRouter(
     req: cyfs.RouterHandlerPostObjectRequest
@@ -111,12 +111,16 @@ export async function updateMessageRouter(
 
     // Cross-zone notification, notify the specified user OOD
     // const stackWraper = checkStack();
-    // const peopleId = getFriendPeopleId();
-    // await stackWraper.postObject(messageObject, ResponseObjectDecoder, {
-    //     reqPath: ROUTER_PATHS.UPDATE_MESSAGE_REQ,
-    //     decId: stack.dec_id!,
-    //     target: cyfs.PeopleId.from_base_58(peopleId).unwrap().object_id // Here is the difference between the same zone and cross zone.
-    // });
+    // const peopleIds = getFriendPeopleIds();
+    // await Promise.all(
+    //     peopleIds.map(async (peopleId) => {
+    //         return await stackWraper.postObject(messageObject, ResponseObjectDecoder, {
+    //             reqPath: ROUTER_PATHS.UPDATE_MESSAGE_REQ,
+    //             decId: stack.dec_id!,
+    //             target: cyfs.PeopleId.from_base_58(peopleId).unwrap().object_id // Here is the difference between the same zone and cross zone.
+    //         });
+    //     })
+    // );
 
     // Create a ResponseObject object as a response parameter and send the result to the front end
     return makeCommonResponse();

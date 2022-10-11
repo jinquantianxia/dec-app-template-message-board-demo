@@ -5,7 +5,7 @@ import { AppObjectType } from '../../common/types';
 import { toNONObjectInfo } from '../../common/cyfs_helper/kits';
 import { ResponseObject } from '../../common/objs/response_object';
 import { PublishCommentReqRequestParam } from '../../common/routers';
-import { getFriendPeopleId, makeCommonResponse } from '../util';
+import { getFriendPeopleIds, makeCommonResponse } from '../util';
 
 export async function publishCommentReqRouter(
     req: cyfs.RouterHandlerPostObjectRequest

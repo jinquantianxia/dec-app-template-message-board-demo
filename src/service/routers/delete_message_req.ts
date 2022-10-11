@@ -3,7 +3,7 @@ import { MessageDecoder } from '../../common/objs/message_object';
 import { checkStack } from '../../common/cyfs_helper/stack_wraper';
 import { AppObjectType } from '../../common/types';
 import { DeleteMessageReqRequestParam } from '../../common/routers';
-import { getFriendPeopleId, makeCommonResponse } from '../util';
+import { getFriendPeopleIds, makeCommonResponse } from '../util';
 
 export async function deleteMessageReqRouter(
     req: cyfs.RouterHandlerPostObjectRequest

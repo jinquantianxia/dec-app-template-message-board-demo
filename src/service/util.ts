@@ -4,10 +4,10 @@ import { PEOPLE_IDS } from '../common/constant';
 import { ResponseObject, ResponseObjectDecoder } from '../common/objs/response_object';
 import { toNONObjectInfo } from '../common/cyfs_helper/kits';
 
-// get your friend people
-export function getFriendPeopleId() {
+// get your friends peopleIds
+export function getFriendPeopleIds() {
     const ownerId = checkStack().checkOwner().to_base_58();
-    return PEOPLE_IDS[0] === ownerId ? PEOPLE_IDS[1] : PEOPLE_IDS[0];
+    return PEOPLE_IDS.filter((peopleId) => peopleId !== ownerId);
 }
 
 export function makeCommonResponse(errCode = cyfs.BuckyErrorCode.Ok, msg = 'ok') {

@@ -11,7 +11,7 @@ import * as MetaClient from '../common/cyfs_helper/meta_client';
 export async function init() {
     // zoneNo: FIRST -> simulator1, SECOND -> simulator2, REAL -> production environment
     // deviceNo: Just use the default SimulatorDeviceNo.FIRST
-    useSimulator(SimulatorZoneNo.SECOND, SimulatorDeviceNo.FIRST);
+    useSimulator(SimulatorZoneNo.REAL, SimulatorDeviceNo.FIRST);
     // MetaClient choose "beta"
     MetaClient.init(MetaClient.EnvTarget.BETA);
     await waitStackRuntime(DEC_ID);
