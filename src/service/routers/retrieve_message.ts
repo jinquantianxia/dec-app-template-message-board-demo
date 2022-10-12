@@ -66,23 +66,14 @@ export async function retrieveMessageRouter(
         return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
 
-    // After releasing the lock, decode the Message object in Uint8Array format to get the final Message object
-    // await pathOpEnv.abort();
-    const MessageResult = gr.unwrap().object.object_raw;
-    const decoder = new MessageDecoder();
-    const r = decoder.from_raw(MessageResult);
-    if (r.err) {
-        const errMsg = `decode failed, ${r}.`;
-        console.error(errMsg);
-        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
-    }
-    const MessageObj = r.unwrap();
+    // get Message NONObjectInfo object
+    const mssageResult = gr.unwrap().object;
 
     // Return the decoded Message object to the front end
     return cyfs.Ok({
         action: cyfs.RouterHandlerAction.Response,
         response: cyfs.Ok({
-            object: toNONObjectInfo(MessageObj)
+            object: mssageResult
         })
     });
 }
