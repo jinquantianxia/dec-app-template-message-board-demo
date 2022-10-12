@@ -62,20 +62,6 @@ export async function updateMessageReqRouter(
     // Locked successfully
     console.log(`lock ${JSON.stringify(paths)} success.`);
 
-    // Use the get_by_path method of pathOpEnv to get the object_id of the old Message object from the storage path of the old Message object
-    const idR = await pathOpEnv.get_by_path(queryMessagePath);
-    if (idR.err) {
-        const errMsg = `get_by_path (${queryMessagePath}) failed, ${idR}`;
-        await pathOpEnv.abort();
-        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
-    }
-    const oldObjectId = idR.unwrap();
-    if (!oldObjectId) {
-        const errMsg = `unwrap failed after get_by_path (${queryMessagePath}) failed, ${idR}`;
-        await pathOpEnv.abort();
-        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
-    }
-
     // Use the new Message object information to create the corresponding NONObjectInfo object, and update the NONObjectInfo object to RootState through the put_object operation
     const nonObj = new cyfs.NONObjectInfo(
         messageObject.desc().object_id(),
@@ -99,12 +85,10 @@ export async function updateMessageReqRouter(
 
     // Using pathOpEnv, the transaction operation of replacing the old Message object with the object_id of the NONObjectInfo object of the new Message object
     const newObjectId = nonObj.object_id;
-    const rs = await pathOpEnv.set_with_path(queryMessagePath, newObjectId!, oldObjectId, true);
-    console.log(
-        `set_with_path(${queryMessagePath}, ${newObjectId!.to_base_58()}, ${oldObjectId.to_base_58()}, true), ${rs}`
-    );
+    const rs = await pathOpEnv.set_with_path(queryMessagePath, newObjectId!);
+    console.log(`set_with_path(${queryMessagePath}, ${newObjectId!.to_base_58()}), ${rs}`);
     if (rs.err) {
-        const errMsg = `commit set_with_path(${queryMessagePath},${newObjectId},${oldObjectId}), ${rs}.`;
+        const errMsg = `commit set_with_path(${queryMessagePath},${newObjectId}), ${rs}.`;
         console.error(errMsg);
         await pathOpEnv.abort();
         return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);

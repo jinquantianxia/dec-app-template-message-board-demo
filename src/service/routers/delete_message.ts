@@ -53,25 +53,11 @@ export async function deleteMessageRouter(
     // Locked successfully
     console.log(`lock ${JSON.stringify(paths)} success.`);
 
-    // Use the get_by_path method of pathOpEnv to get the object_id of the Message object from the storage path of the Message object
-    const idR = await pathOpEnv.get_by_path(queryMessagePath);
-    if (idR.err) {
-        const errMsg = `get_by_path (${queryMessagePath}) failed, ${idR}`;
-        await pathOpEnv.abort();
-        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
-    }
-    const objectId = idR.unwrap();
-    if (!objectId) {
-        const errMsg = `unwrap failed after get_by_path (${queryMessagePath}) failed, ${idR}`;
-        await pathOpEnv.abort();
-        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
-    }
-
     // Use the remove_with_path method of pathOpEnv to pass in the object_id of the Message object to be deleted for the transaction operation of deleting the Message object
-    const rm = await pathOpEnv.remove_with_path(queryMessagePath, objectId);
-    console.log(`remove_with_path(${queryMessagePath}, ${objectId.to_base_58()}), ${rm}`);
+    const rm = await pathOpEnv.remove_with_path(queryMessagePath);
+    console.log(`remove_with_path(${queryMessagePath}), ${rm}`);
     if (rm.err) {
-        const errMsg = `commit remove_with_path(${queryMessagePath}, ${objectId}), ${rm}.`;
+        const errMsg = `commit remove_with_path(${queryMessagePath}), ${rm}.`;
         console.error(errMsg);
         await pathOpEnv.abort();
         return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);

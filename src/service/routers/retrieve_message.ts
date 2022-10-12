@@ -37,22 +37,8 @@ export async function retrieveMessageRouter(
     }
     const pathOpEnv = createRet.unwrap();
 
-    // Determine the storage path of the Message object to be queried and lock the path
-    const queryMessagePath = `/messages_list/${messageObject.key}`;
-    const paths = [queryMessagePath];
-    console.log(`will lock paths ${JSON.stringify(paths)}`);
-    const lockR = await pathOpEnv.lock(paths, cyfs.JSBI.BigInt(30000));
-    if (lockR.err) {
-        const errMsg = `lock failed, ${lockR}`;
-        console.error(errMsg);
-        await pathOpEnv.abort();
-        return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
-    }
-
-    // Locked successfully
-    console.log(`lock ${JSON.stringify(paths)} success.`);
-
     // Use the get_by_path method of pathOpEnv to get the object_id of the Message object from the storage path of the Message object
+    const queryMessagePath = `/messages_list/${messageObject.key}`;
     const idR = await pathOpEnv.get_by_path(queryMessagePath);
     if (idR.err) {
         const errMsg = `get_by_path (${queryMessagePath}) failed, ${idR}`;
@@ -81,7 +67,7 @@ export async function retrieveMessageRouter(
     }
 
     // After releasing the lock, decode the Message object in Uint8Array format to get the final Message object
-    await pathOpEnv.abort();
+    // await pathOpEnv.abort();
     const MessageResult = gr.unwrap().object.object_raw;
     const decoder = new MessageDecoder();
     const r = decoder.from_raw(MessageResult);
