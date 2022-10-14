@@ -27,7 +27,7 @@ export default function MessageItem({
     const [deleteLoading, setDeleteLoading] = useState(false);
     useEffect(() => {
         setTimeout(() => {
-            queryCommentsFromMessage();
+            // queryCommentsFromMessage();
         }, 2000);
     }, []);
 

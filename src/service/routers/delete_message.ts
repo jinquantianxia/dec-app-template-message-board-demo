@@ -39,8 +39,8 @@ export async function deleteMessageRouter(
     const pathOpEnv = createRet.unwrap();
 
     // Determine the storage path of the Message object to be deleted and lock the path
-    const queryMessagePath = `/messages_list/${messageObject.key}`;
-    const paths = [queryMessagePath];
+    const deleteMessagePath = `/messages_list/${messageObject.key}`;
+    const paths = [deleteMessagePath];
     console.log(`will lock paths ${JSON.stringify(paths)}`);
     const lockR = await pathOpEnv.lock(paths, cyfs.JSBI.BigInt(30000));
     if (lockR.err) {
@@ -54,10 +54,10 @@ export async function deleteMessageRouter(
     console.log(`lock ${JSON.stringify(paths)} success.`);
 
     // Use the remove_with_path method of pathOpEnv to pass in the object_id of the Message object to be deleted for the transaction operation of deleting the Message object
-    const rm = await pathOpEnv.remove_with_path(queryMessagePath);
-    console.log(`remove_with_path(${queryMessagePath}), ${rm}`);
+    const rm = await pathOpEnv.remove_with_path(deleteMessagePath);
+    console.log(`remove_with_path(${deleteMessagePath}), ${rm}`);
     if (rm.err) {
-        const errMsg = `commit remove_with_path(${queryMessagePath}), ${rm}.`;
+        const errMsg = `commit remove_with_path(${deleteMessagePath}), ${rm}.`;
         console.error(errMsg);
         await pathOpEnv.abort();
         return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);

@@ -108,40 +108,44 @@ export async function updateMessage(msgKey: string, content: string) {
 }
 
 // retrieve message
-export async function retrieveMessage(objectId: cyfs.ObjectId) {
-    const stack = checkStack().check();
-    const gr = await stack.non_service().get_object({
-        common: { level: cyfs.NONAPILevel.Router, flags: 0 },
-        object_id: objectId
+export async function retrieveMessage(msgKey: string) {
+    const stackWraper = checkStack();
+    // Create a new Message object
+    const messageObj = Message.create({
+        key: msgKey,
+        content: '',
+        decId: DEC_ID,
+        owner: stackWraper.checkOwner()
     });
-    if (gr.err) {
-        const errMsg = `get_object from non_service failed, objectId(${objectId.to_base_58()})`;
-        console.error(errMsg);
+    // make a request
+    const ret = await stackWraper.postObject(messageObj, MessageDecoder, {
+        reqPath: ROUTER_PATHS.RETRIEVE_MESSAGE,
+        decId: DEC_ID
+    });
+    if (ret.err) {
+        console.error(`reponse err, ${ret}`);
         return null;
     }
-    const msgResult = gr.unwrap().object.object_raw;
-    const decoder = new MessageDecoder();
-    const rm = decoder.from_raw(msgResult);
-    if (rm.err) {
-        const msg = `decode failed, ${rm}.`;
-        console.error(msg);
-        return null;
+    // Parse out the MessageObject object
+    const msgRawObj = ret.unwrap();
+    if (msgRawObj) {
+        const msgObj: MessageItem = {
+            key: msgRawObj.key,
+            name: msgRawObj.desc().owner()!.unwrap().to_base_58(),
+            time: cyfs.bucky_time_2_js_time(msgRawObj.desc().create_time()),
+            content: msgRawObj.content,
+            isSelf: msgRawObj.desc().owner()!.unwrap().equals(checkStack().checkOwner())
+        };
+        return msgObj;
     }
-    const msgRawObj = rm.unwrap();
-    const msgObj: MessageItem = {
-        key: msgRawObj.key,
-        name: msgRawObj.desc().owner()!.unwrap().to_base_58(),
-        time: cyfs.bucky_time_2_js_time(msgRawObj.desc().create_time()),
-        content: msgRawObj.content,
-        isSelf: msgRawObj.desc().owner()!.unwrap().equals(checkStack().checkOwner())
-    };
-    return msgObj;
+    return null;
 }
 
 // paging list messages under path /messages_list
 export async function listMessagesByPage(pageIndex: number) {
     const stack = checkStack();
     // Get your own OwnerId
+    // const target = to ? to : stack.checkOwner();
     const selfObjectId = stack.checkOwner();
     // Get an instance of cyfs.GlobalStateAccessStub
     const access = stack.check().root_state_access_stub(selfObjectId);
@@ -158,7 +162,7 @@ export async function listMessagesByPage(pageIndex: number) {
     }
 
     const list = lr.unwrap();
-    const keyList = list.map((item) => item.map!.value);
+    const keyList = list.map((item) => item.map!.key);
     console.log('keyList: ', keyList);
     const msgList = await Promise.all(
         keyList.map(async (item) => {
@@ -170,3 +174,38 @@ export async function listMessagesByPage(pageIndex: number) {
     retList.sort((a, b) => b.time - a.time);
     return retList;
 }
+
+/**
+ * use non_service retrieve message object directly
+ * you should change listMessagesByPage const keyList = list.map((item) => item.map!.key) to  item.map!.value
+ */
+
+// export async function retrieveMessage(objectId: cyfs.ObjectId) {
+//     const stack = checkStack().check();
+//     const gr = await stack.non_service().get_object({
+//         common: { level: cyfs.NONAPILevel.Router, flags: 0 },
+//         object_id: objectId
+//     });
+//     if (gr.err) {
+//         const errMsg = `get_object from non_service failed, objectId(${objectId.to_base_58()})`;
+//         console.error(errMsg);
+//         return null;
+//     }
+//     const msgResult = gr.unwrap().object.object_raw;
+//     const decoder = new MessageDecoder();
+//     const rm = decoder.from_raw(msgResult);
+//     if (rm.err) {
+//         const msg = `decode failed, ${rm}.`;
+//         console.error(msg);
+//         return null;
+//     }
+//     const msgRawObj = rm.unwrap();
+//     const msgObj: MessageItem = {
+//         key: msgRawObj.key,
+//         name: msgRawObj.desc().owner()!.unwrap().to_base_58(),
+//         time: cyfs.bucky_time_2_js_time(msgRawObj.desc().create_time()),
+//         content: msgRawObj.content,
+//         isSelf: msgRawObj.desc().owner()!.unwrap().equals(checkStack().checkOwner())
+//     };
+//     return msgObj;
+// }

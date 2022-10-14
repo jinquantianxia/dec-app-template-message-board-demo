@@ -38,8 +38,8 @@ export async function updateMessageRouter(
     const pathOpEnv = createRet.unwrap();
 
     // Determine the storage path of the Message object to be updated and lock the path
-    const queryMessagePath = `/messages_list/${messageObject.key}`;
-    const paths = [queryMessagePath];
+    const updateMessagePath = `/messages_list/${messageObject.key}`;
+    const paths = [updateMessagePath];
     console.log(`will lock paths ${JSON.stringify(paths)}`);
     const lockR = await pathOpEnv.lock(paths, cyfs.JSBI.BigInt(30000));
     if (lockR.err) {
@@ -75,10 +75,12 @@ export async function updateMessageRouter(
 
     // Using pathOpEnv, the transaction operation of replacing the old Message object with the object_id of the NONObjectInfo object of the new Message object
     const newObjectId = nonObj.object_id;
-    const rs = await pathOpEnv.set_with_path(queryMessagePath, newObjectId!);
-    console.log(`set_with_path(${queryMessagePath}, ${newObjectId!.to_base_58()}, }, true), ${rs}`);
+    const rs = await pathOpEnv.set_with_path(updateMessagePath, newObjectId!);
+    console.log(
+        `set_with_path(${updateMessagePath}, ${newObjectId!.to_base_58()}, }, true), ${rs}`
+    );
     if (rs.err) {
-        const errMsg = `commit set_with_path(${queryMessagePath},${newObjectId}), ${rs}.`;
+        const errMsg = `commit set_with_path(${updateMessagePath},${newObjectId}), ${rs}.`;
         console.error(errMsg);
         await pathOpEnv.abort();
         return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);

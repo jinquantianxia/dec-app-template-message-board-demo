@@ -31,7 +31,7 @@ async function addRouters(stack: cyfs.SharedCyfsStack, routers: RouterArray): Pr
         // Set access permissions for req_path
         const access = new cyfs.AccessString(0);
         access.set_group_permissions(cyfs.AccessGroup.OwnerDec, cyfs.AccessPermissions.Full);
-        // if (routerObj.reqPath.endsWith('_req')) {
+        // if (routerObj.reqPath.endsWith('/messages/retrieve')) {
         //     access.set_group_permissions(
         //         cyfs.AccessGroup.FriendZone,
         //         cyfs.AccessPermissions.CallOnly
@@ -66,6 +66,18 @@ async function addRouters(stack: cyfs.SharedCyfsStack, routers: RouterArray): Pr
             console.info(`add post handler (${handleId}) success.`);
         }
     }
+    // const access = new cyfs.AccessString(0);
+    // access.set_group_permissions(cyfs.AccessGroup.OthersZone, cyfs.AccessPermissions.ReadOnly);
+    // access.set_group_permissions(cyfs.AccessGroup.CurrentDevice, cyfs.AccessPermissions.ReadOnly);
+    // access.set_group_permissions(cyfs.AccessGroup.OwnerDec, cyfs.AccessPermissions.ReadOnly);
+    // const r = await stack
+    //     .root_state_meta_stub()
+    //     .add_access(cyfs.GlobalStatePathAccessItem.new('/messages_list', access));
+    // if (r.err) {
+    //     console.error(`path /messages_list add access error: ${r}`);
+    // } else {
+    //     console.log('add sccess /messages_list success.');
+    // }
 }
 
 async function main() {

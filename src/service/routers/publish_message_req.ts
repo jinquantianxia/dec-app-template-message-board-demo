@@ -50,8 +50,8 @@ export async function publishMessageReqRouter(
     const pathOpEnv = r.unwrap();
 
     // Determine the path where the new Message object will be stored and lock the path
-    const msgPath = `/messages_list/${messageObject.key}`;
-    const paths = [msgPath];
+    const createMessagePath = `/messages_list/${messageObject.key}`;
+    const paths = [createMessagePath];
     console.log(`will lock paths ${JSON.stringify(paths)}`);
     const lockR = await pathOpEnv.lock(paths, cyfs.JSBI.BigInt(30000));
     if (lockR.err) {
@@ -85,10 +85,10 @@ export async function publishMessageReqRouter(
 
     // Use the object_id of NONObjectInfo for the transaction operation of creating a new Message object
     const objectId = nonObj.object_id;
-    const rp = await pathOpEnv.insert_with_path(msgPath, objectId);
+    const rp = await pathOpEnv.insert_with_path(createMessagePath, objectId);
     if (rp.err) {
         await pathOpEnv.abort();
-        const errMsg = `commit insert_with_path(${msgPath}, ${objectId}), ${rp}.`;
+        const errMsg = `commit insert_with_path(${createMessagePath}, ${objectId}), ${rp}.`;
         console.error(errMsg);
         return makeCommonResponse(cyfs.BuckyErrorCode.Failed, errMsg);
     }
