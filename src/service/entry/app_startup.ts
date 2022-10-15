@@ -67,7 +67,7 @@ async function addRouters(stack: cyfs.SharedCyfsStack, routers: RouterArray): Pr
         }
     }
     // const access = new cyfs.AccessString(0);
-    // access.set_group_permissions(cyfs.AccessGroup.OthersZone, cyfs.AccessPermissions.ReadOnly);
+    // access.set_group_permissions(cyfs.AccessGroup.FriendZone, cyfs.AccessPermissions.ReadOnly);
     // access.set_group_permissions(cyfs.AccessGroup.CurrentDevice, cyfs.AccessPermissions.ReadOnly);
     // access.set_group_permissions(cyfs.AccessGroup.OwnerDec, cyfs.AccessPermissions.ReadOnly);
     // const r = await stack
@@ -78,6 +78,7 @@ async function addRouters(stack: cyfs.SharedCyfsStack, routers: RouterArray): Pr
     // } else {
     //     console.log('add sccess /messages_list success.');
     // }
+    // console.log('access unmber:', access.value);
 }
 
 async function main() {
