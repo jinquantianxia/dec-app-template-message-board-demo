@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import { publishComment, listCommentsByPage } from '@www/apis/comment';
 import CommentItem from '@www/components/CommentItem/CommentItem';
 import { deleteMessage, updateMessage } from '@www/apis/message';
+import { queryPeopleInfo } from '@www/utils/common';
 
 interface Props {
     messageObject: MessageItem;
@@ -25,11 +26,21 @@ export default function MessageItem({
     const [showInput, setShowInput] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
+    const [username, setUsername] = useState(messageObject.name);
     useEffect(() => {
-        setTimeout(() => {
-            // queryCommentsFromMessage();
-        }, 2000);
+        queryPeopleName();
+        //     setTimeout(() => {
+        //         queryCommentsFromMessage();
+        //     }, 2000);
     }, []);
+
+    const queryPeopleName = async () => {
+        const peopleId = cyfs.PeopleId.from_base_58(messageObject.name).unwrap();
+        const r = await queryPeopleInfo(peopleId);
+        if (r) {
+            setUsername(r);
+        }
+    };
 
     const handleReplyClick = () => {
         setShowInput(true);
@@ -82,7 +93,7 @@ export default function MessageItem({
             </div>
             <div className={styles.contentBox}>
                 <div className={styles.nameAndTime}>
-                    <div className={styles.name}>{messageObject.name}</div>
+                    <div className={styles.name}>{username}</div>
                     <div className={styles.time}>
                         {dayjs(messageObject.time).format('YYYY-MM-DD HH:mm:ss')}
                     </div>
@@ -135,13 +146,13 @@ export default function MessageItem({
                         </div>
                     )}
                 </div>
-                {commentList.length > 0 && (
+                {/* {commentList.length > 0 && (
                     <div className={styles.comments}>
                         {commentList.map((comment) => {
                             return <CommentItem key={comment.key} commentObject={comment} />;
                         })}
                     </div>
-                )}
+                )} */}
             </div>
         </div>
     );

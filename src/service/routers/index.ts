@@ -15,10 +15,10 @@ export const routers: RouterArray = [
         reqPath: ROUTER_PATHS.PUBLISH_MESSAGE,
         router: publishMessageRouter
     },
-    {
-        reqPath: ROUTER_PATHS.PUBLISH_MESSAGE_REQ,
-        router: publishMessageReqRouter
-    },
+    // {
+    //     reqPath: ROUTER_PATHS.PUBLISH_MESSAGE_REQ,
+    //     router: publishMessageReqRouter
+    // },
     {
         reqPath: ROUTER_PATHS.RETRIEVE_MESSAGE,
         router: retrieveMessageRouter
@@ -27,18 +27,18 @@ export const routers: RouterArray = [
         reqPath: ROUTER_PATHS.UPDATE_MESSAGE,
         router: updateMessageRouter
     },
-    {
-        reqPath: ROUTER_PATHS.UPDATE_MESSAGE_REQ,
-        router: updateMessageReqRouter
-    },
+    // {
+    //     reqPath: ROUTER_PATHS.UPDATE_MESSAGE_REQ,
+    //     router: updateMessageReqRouter
+    // },
     {
         reqPath: ROUTER_PATHS.DELETE_MESSAGE,
         router: deleteMessageRouter
     },
-    {
-        reqPath: ROUTER_PATHS.DELETE_MESSAGE_REQ,
-        router: deleteMessageReqRouter
-    },
+    // {
+    //     reqPath: ROUTER_PATHS.DELETE_MESSAGE_REQ,
+    //     router: deleteMessageReqRouter
+    // },
 
     {
         reqPath: ROUTER_PATHS.PUBLISH_COMMENT,

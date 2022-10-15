@@ -149,14 +149,14 @@ export async function listMessagesByPage(pageIndex: number) {
     const selfObjectId = stack.checkOwner();
     // Get an instance of cyfs.GlobalStateAccessStub
     const access = stack.check().root_state_access_stub(selfObjectId);
-    // Use the list method to list all objects under /messages
+    // Use the list method to list all objects under messages_list
     const lr = await access.list('/messages_list', pageIndex, 10);
 
     if (lr.err) {
         if (lr.val.code !== cyfs.BuckyErrorCode.NotFound) {
-            console.error(`list-subdirs in(/messages) io failed, ${lr}`);
+            console.error(`list-subdirs in(messages_list) io failed, ${lr}`);
         } else {
-            console.warn(`list-subdirs in(/messages) not found, ${lr}`);
+            console.warn(`list-subdirs in(messages_list) not found, ${lr}`);
         }
         return [];
     }

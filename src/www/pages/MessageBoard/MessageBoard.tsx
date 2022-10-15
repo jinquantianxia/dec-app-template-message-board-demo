@@ -12,17 +12,19 @@ export default function MessageBoard() {
     const [spinning, setSpinning] = useState(false);
     const [publishLoading, setPublishLoading] = useState(false);
     const [messageList, setMessageList] = useState<MessageItemObject[]>([]);
+    const [showInput, setShowInput] = useState(true);
 
     useEffect(() => {
+        if (location.search.includes('peopleid=')) setShowInput(false);
         setTimeout(() => {
             queryMessageRecords();
         }, 2000);
     }, []);
 
-    // const extractTargetFromSearch = () => {
+    // const extractPeopleIdFromSearch = () => {
     //     let target = 'self';
-    //     if (location.search.includes('target=')) {
-    //         target = location.search.substring(8);
+    //     if (location.search.includes('peopleid=')) {
+    //         target = location.search.substring(10);
     //     }
     //     console.log('target: ', target);
     //     return target;
@@ -30,7 +32,7 @@ export default function MessageBoard() {
 
     const queryMessageRecords = async () => {
         setSpinning(true);
-        // const target = extractTargetFromSearch();
+        // const target = extractPeopleIdFromSearch();
         // const to = target === 'self' ? undefined : cyfs.ObjectId.from_base_58(target).unwrap();
         const list = await listMessagesByPage(0);
         setMessageList(list);
@@ -48,22 +50,24 @@ export default function MessageBoard() {
     return (
         <div className={styles.box}>
             <div className={styles.messageBoard}>
-                <div className={styles.publishBox}>
-                    <TextArea
-                        rows={4}
-                        onChange={(e) => setMessage(e.target.value)}
-                        value={message}
-                    />
-                    <div className={styles.publishBtnBox}>
-                        <Button
-                            type="primary"
-                            onClick={() => handlePublishMessage(message)}
-                            loading={publishLoading}
-                        >
-                            Leave A Message
-                        </Button>
+                {showInput && (
+                    <div className={styles.publishBox}>
+                        <TextArea
+                            rows={4}
+                            onChange={(e) => setMessage(e.target.value)}
+                            value={message}
+                        />
+                        <div className={styles.publishBtnBox}>
+                            <Button
+                                type="primary"
+                                onClick={() => handlePublishMessage(message)}
+                                loading={publishLoading}
+                            >
+                                Leave A Message
+                            </Button>
+                        </div>
                     </div>
-                </div>
+                )}
                 <h2 className={styles.title}>Message Board</h2>
 
                 <div className={styles.messageBoardContent}>
