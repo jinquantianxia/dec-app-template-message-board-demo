@@ -108,7 +108,7 @@ export async function updateMessage(msgKey: string, content: string) {
 }
 
 // retrieve message
-export async function retrieveMessage(msgKey: string) {
+export async function retrieveMessage(msgKey: string, target?: cyfs.ObjectId) {
     const stackWraper = checkStack();
     // Create a new Message object
     const messageObj = Message.create({
@@ -120,7 +120,8 @@ export async function retrieveMessage(msgKey: string) {
     // make a request
     const ret = await stackWraper.postObject(messageObj, MessageDecoder, {
         reqPath: ROUTER_PATHS.RETRIEVE_MESSAGE,
-        decId: DEC_ID
+        decId: DEC_ID,
+        target
     });
     if (ret.err) {
         console.error(`reponse err, ${ret}`);
@@ -131,10 +132,10 @@ export async function retrieveMessage(msgKey: string) {
     if (msgRawObj) {
         const msgObj: MessageItem = {
             key: msgRawObj.key,
-            name: msgRawObj.desc().owner()!.unwrap().to_base_58(),
+            name: msgRawObj.desc().owner()!.to_base_58(),
             time: cyfs.bucky_time_2_js_time(msgRawObj.desc().create_time()),
             content: msgRawObj.content,
-            isSelf: msgRawObj.desc().owner()!.unwrap().equals(checkStack().checkOwner())
+            isSelf: msgRawObj.desc().owner()!.equals(checkStack().checkOwner())
         };
         return msgObj;
     }
@@ -142,13 +143,13 @@ export async function retrieveMessage(msgKey: string) {
 }
 
 // paging list messages under path /messages_list
-export async function listMessagesByPage(pageIndex: number) {
+export async function listMessagesByPage(pageIndex: number, to?: cyfs.ObjectId) {
     const stack = checkStack();
     // Get your own OwnerId
-    // const target = to ? to : stack.checkOwner();
-    const selfObjectId = stack.checkOwner();
+    const target = to ? to : stack.checkOwner();
+    // const selfObjectId = stack.checkOwner();
     // Get an instance of cyfs.GlobalStateAccessStub
-    const access = stack.check().root_state_access_stub(selfObjectId);
+    const access = stack.check().root_state_accessor_stub(target);
     // Use the list method to list all objects under messages_list
     const lr = await access.list('/messages_list', pageIndex, 10);
 
@@ -166,7 +167,7 @@ export async function listMessagesByPage(pageIndex: number) {
     console.log('keyList: ', keyList);
     const msgList = await Promise.all(
         keyList.map(async (item) => {
-            const msg = await retrieveMessage(item);
+            const msg = await retrieveMessage(item, target);
             return msg;
         })
     );

@@ -66,10 +66,10 @@ export async function retrieveComment(objectId: cyfs.ObjectId) {
     const commentObj: CommentItem = {
         key: commentRawObj.key,
         msgId: commentRawObj.msgId,
-        name: commentRawObj.desc().owner()!.unwrap().to_base_58(),
+        name: commentRawObj.desc().owner()!.to_base_58(),
         time: cyfs.bucky_time_2_js_time(commentRawObj.desc().create_time()),
         content: commentRawObj.content,
-        isSelf: commentRawObj.desc().owner()!.unwrap().equals(checkStack().checkOwner())
+        isSelf: commentRawObj.desc().owner()!.equals(checkStack().checkOwner())
     };
     return commentObj;
 }
@@ -80,7 +80,7 @@ export async function listCommentsByPage(messageId: string, pageIndex: number) {
     // Get your own OwnerId
     const selfObjectId = stack.checkOwner();
     // Get an instance of cyfs.GlobalStateAccessStub
-    const access = stack.check().root_state_access_stub(selfObjectId);
+    const access = stack.check().root_state_accessor_stub(selfObjectId);
     // Use the list method to list all objects under /messages
     const lr = await access.list(`/comments_list/${messageId}`, pageIndex, 10);
 

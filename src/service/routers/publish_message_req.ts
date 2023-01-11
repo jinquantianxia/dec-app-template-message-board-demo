@@ -11,7 +11,7 @@ export async function publishMessageReqRouter(
     req: cyfs.RouterHandlerPostObjectRequest
 ): Promise<cyfs.BuckyResult<cyfs.RouterHandlerPostObjectResult>> {
     const stack = checkStack().check();
-    const owner = stack.local_device().desc().owner()!.unwrap();
+    const owner = stack.local_device().desc().owner()!;
     console.log(`current target -----> ${req.request.common.target?.to_base_58()}`);
 
     // Only allow cross-zone request
